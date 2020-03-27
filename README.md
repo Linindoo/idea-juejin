@@ -3,11 +3,15 @@
 在IDEA上的掘金社区沸点插件
 
 #### 安装插件
+- 在IDEA `settings->Plugins` 搜索 `juejin-pins`下载安装即可
+    
+- 打开[IDEA官网插件市场](https://plugins.jetbrains.com/plugin/13985-juejin-pins/update/81792)下载插件本地安装
 
 #### 当前版本支持的功能
 - [x] 沸点板块浏览（仅支持推荐板块）
 - [x] 图片预览和大图加载
 - [x] 沸点评论想看就看
+- [x] 浏览器跳转
 #### 未来想做的
 - [ ] 登录掘金社区  
 - [ ] 支持沸点下的所有板块
