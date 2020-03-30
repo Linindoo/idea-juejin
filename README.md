@@ -5,7 +5,7 @@
 #### 安装插件
 - 在IDEA `settings->Plugins` 搜索 `juejin-pins`下载安装即可
     
-- 打开[IDEA官网插件市场](https://plugins.jetbrains.com/plugin/13985-juejin-pins/update/81792)下载插件本地安装
+- 打开[IDEA官网插件市场](https://plugins.jetbrains.com/plugin/13985-juejin-pins/update/81792)搜索`juejin-pins`下载插件本地安装
 
 #### 当前版本支持的功能
 - [x] 沸点板块浏览（仅支持推荐板块）
