@@ -1,0 +1,50 @@
+<idea-plugin>
+  <id>cn.olange.pins</id>
+  <name>juejin-pins</name>
+  <version>1.0.5</version>
+  <vendor email="olange@52zhoujia.cn" url="https://github.com/zhoriya/idea-juejin">olange</vendor>
+
+  <description><![CDATA[
+  <p>juejin pins plugin</p>
+  <p> A idea plugin for juejin </p>
+   <p>here is the main functions:</p>
+   <em>1.Get the latest trends in juejin</em>
+   <em>2.Support image browsing in various formats</em>
+   <em>3.Communicate with developer </em>
+   <em>4.Swimm and fish </em>
+   <p> juejin-pins是一款增强idea对juejin社区支持的插件，数据来源于<a href="https://juejin.im/">掘金</a>，目前可以提供以下功能 </p>
+   <em>1.获取热点信息</em>
+   <em>2.支持图片浏览</em>
+   <em>3.查看沸点评论</em>
+   <em>4.摸鱼</em>
+    ]]></description>
+  <change-notes><![CDATA[
+      <em>优化沸点显示性能</em>
+    ]]>
+  </change-notes>
+  <depends>com.intellij.modules.platform</depends>
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="173.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <project-components>
+
+  </project-components>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+    <toolWindow id="pins" icon="/icons/juejin.png" anchor="right" factoryClass="cn.olange.pins.PinsToolWindowFactory"/>
+    <projectService serviceInterface="cn.olange.pins.service.PinsService"
+                    serviceImplementation="cn.olange.pins.service.PinsService"/>
+  </extensions>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+</idea-plugin>
