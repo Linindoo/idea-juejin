@@ -1,16 +1,13 @@
 package cn.olange.pins.view;
 
 import cn.olange.pins.action.RefreshPinsAction;
-import cn.olange.pins.model.MyVFlowLayout;
 import cn.olange.pins.model.PinListCellRender;
 import cn.olange.pins.service.PinsService;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.LoadingDecorator;
 import com.intellij.openapi.ui.MessageType;
@@ -34,14 +31,21 @@ public class PinsToolWindowPanel extends JPanel implements Disposable{
 	private JButton loadmorebtn;
 	private JList pinList;
 	private Project project;
+	private String topic;
 	private JsonArray datas = new JsonArray();
 	private LoadingDecorator loadingDecorator;
 	private PinsService instance;
 	private int pageSize = 20;
 	private String endCursor = "";
+	private String datafield = "recommendedActivityFeed";
 
-	public PinsToolWindowPanel(Project project) {
+
+	public PinsToolWindowPanel(Project project, String topic, String type) {
 		this.project = project;
+		this.topic = topic;
+		if ("hot".equalsIgnoreCase(type)) {
+			datafield = "popularPinList";
+		}
 		DefaultActionGroup actionGroup = new DefaultActionGroup("PinsGroup", false);
 		RefreshPinsAction refreshPinsAction = new RefreshPinsAction(x -> {
 			refresh();
@@ -66,17 +70,17 @@ public class PinsToolWindowPanel extends JPanel implements Disposable{
 				pinDetailDialog.show();
 			}
 		});
-		instance.getPageInfo(this.endCursor,pageSize, result->{
+		instance.getPageInfo(topic, this.endCursor, pageSize, result -> {
 			if (result.isSuccess()) {
-				JsonObject data = (JsonObject) result.getResult();
-				JsonObject items = data.getAsJsonObject("data").getAsJsonObject("recommendedActivityFeed")
+				JsonObject pinsData = ((JsonObject) result.getResult()).getAsJsonObject("data");
+				JsonObject items = pinsData.getAsJsonObject(datafield)
 						.getAsJsonObject("items");
 				JsonObject pageInfo = items.getAsJsonObject("pageInfo");
 				saveEndCorse(pageInfo);
 				JsonArray edges = items.getAsJsonArray("edges");
 				datas = edges;
 				refeshData();
-			}else {
+			} else {
 				UIUtil.invokeLaterIfNeeded(() -> showNotification(pinList, MessageType.ERROR, "获取数据失败，请稍后重试", Balloon.Position.atRight));
 			}
 			loadingDecorator.stopLoading();
@@ -85,10 +89,10 @@ public class PinsToolWindowPanel extends JPanel implements Disposable{
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				loadingDecorator.startLoading(true);
-				instance.getPageInfo(endCursor,pageSize,result->{
+				instance.getPageInfo(topic, endCursor, pageSize, result -> {
 					if (result.isSuccess()) {
 						JsonObject data = (JsonObject) result.getResult();
-						JsonObject items = data.getAsJsonObject("data").getAsJsonObject("recommendedActivityFeed")
+						JsonObject items = data.getAsJsonObject("data").getAsJsonObject(datafield)
 								.getAsJsonObject("items");
 						JsonObject pageInfo = items.getAsJsonObject("pageInfo");
 						saveEndCorse(pageInfo);
@@ -134,10 +138,10 @@ public class PinsToolWindowPanel extends JPanel implements Disposable{
 		loadingDecorator.startLoading(true);
 		this.datas = new JsonArray();
 		this.endCursor = "";
-		instance.getPageInfo(endCursor,pageSize,result->{
+		instance.getPageInfo(this.topic, endCursor, pageSize, result -> {
 			if (result.isSuccess()) {
 				JsonObject data = (JsonObject) result.getResult();
-				JsonObject items = data.getAsJsonObject("data").getAsJsonObject("recommendedActivityFeed")
+				JsonObject items = data.getAsJsonObject("data").getAsJsonObject(datafield)
 						.getAsJsonObject("items");
 				JsonObject pageInfo = items.getAsJsonObject("pageInfo");
 				saveEndCorse(pageInfo);
@@ -147,7 +151,7 @@ public class PinsToolWindowPanel extends JPanel implements Disposable{
 			} else {
 				UIUtil.invokeLaterIfNeeded(() -> showNotification(pinList, MessageType.ERROR, "获取数据失败，请稍后重试", Balloon.Position.atRight));
 			}
-			UIUtil.invokeLaterIfNeeded(()->loadingDecorator.stopLoading());
+			UIUtil.invokeLaterIfNeeded(() -> loadingDecorator.stopLoading());
 		});
 	}
 

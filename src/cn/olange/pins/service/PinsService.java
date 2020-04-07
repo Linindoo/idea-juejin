@@ -17,7 +17,7 @@ public class PinsService {
 		return ServiceManager.getService(project, PinsService.class);
 	}
 
-	public void getPageInfo(String  endCursor, int pageSize, Handler<AsyncResult> handler) {
+	public void getPageInfo(String topic, String endCursor, int pageSize, Handler<AsyncResult> handler) {
 		ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
 			@Override
 			public void run() {
@@ -29,7 +29,7 @@ public class PinsService {
 				query.add("variables", pageInfo);
 				JsonObject extensions = new JsonObject();
 				JsonObject exquery = new JsonObject();
-				exquery.addProperty("id", "249431a8e4d85e459f6c29eb808e76d0");
+				exquery.addProperty("id", topic);
 				extensions.add("query", exquery);
 				query.add("extensions", extensions);
 				try {

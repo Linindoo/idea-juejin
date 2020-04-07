@@ -58,7 +58,12 @@ public class PinContentInfoPanel extends JPanel {
 	private void initData() throws IOException {
 		JsonObject node = this.pinItem.getAsJsonObject("node");
 		JsonArray actors = node.getAsJsonArray("actors");
-		JsonObject actor = (JsonObject) actors.get(0);
+		JsonObject actor ;
+		if (actors != null) {
+			actor = (JsonObject) actors.get(0);
+		} else {
+			actor = node.getAsJsonObject("user");
+		}
 		String avatarUrl = actor.get("avatarLarge").getAsString();
 		if (StringUtils.isNotEmpty(avatarUrl)) {
 			URL avatarLarge = new URL(avatarUrl);
@@ -73,7 +78,12 @@ public class PinContentInfoPanel extends JPanel {
 		this.company.setText(actor.get("company").getAsString());
 
 		JsonArray targets = node.getAsJsonArray("targets");
-		JsonObject target = (JsonObject) targets.get(0);
+		JsonObject target;
+		if (targets != null) {
+			target = (JsonObject) targets.get(0);
+		} else {
+			target = node;
+		}
 		this.contentStr = target.get("content").getAsString();
 		this.initExpandContent();
 		this.prise.setText(target.get("likeCount").getAsString());
