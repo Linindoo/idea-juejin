@@ -3,6 +3,7 @@ package cn.olange.pins.view;
 import cn.olange.pins.utils.DateUtils;
 import cn.olange.pins.utils.ImageUtils;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.browsers.WebBrowserManager;
@@ -13,6 +14,7 @@ import com.intellij.util.ui.ImageUtil;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -33,6 +35,7 @@ public class PinContentInfoPanel extends JPanel {
 	private JPanel imageContent;
 	private JLabel expand;
 	private JLabel browswebtn;
+	private JLabel topic;
 	private JsonObject pinItem;
 	private Project project;
 	private boolean showCommentDialog;
@@ -139,6 +142,13 @@ public class PinContentInfoPanel extends JPanel {
 			} else if (pictures.size() == 2) {
 				this.imageContent.add(label, new GridConstraints(0  , 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
 			}
+		}
+		JsonElement jsonElement = target.get("topic");
+		if (jsonElement != null && !jsonElement.isJsonNull()) {
+			this.topic.setVisible(true);
+			this.topic.setText(jsonElement.getAsJsonObject().get("title").getAsString());
+		} else {
+			this.topic.setVisible(false);
 		}
 	}
 
