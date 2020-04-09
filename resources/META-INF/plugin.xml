@@ -19,7 +19,14 @@
    <em>4.摸鱼</em>
     ]]></description>
   <change-notes><![CDATA[
-      <em>优化沸点显示性能</em>
+  <html>
+      <ul>
+        <li>1.优化沸点显示性能</li>
+        <li>2.添加热门板块</li>
+        <li>3.显示主题分类</li>
+      </ul>
+      <em></em>
+      </html>
     ]]>
   </change-notes>
   <depends>com.intellij.modules.platform</depends>
