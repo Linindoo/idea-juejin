@@ -44,7 +44,7 @@ public class CommentItem extends JPanel{
 		this.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 0, 10), -1, -1));
 		this.add(main, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
 		this.comment = pinItem;
-		this.commentID = pinItem.get("id").getAsString();
+		this.commentID = pinItem.get("comment_id").getAsString();
 		try {
 			this.initData();
 		} catch (IOException e) {
@@ -56,9 +56,10 @@ public class CommentItem extends JPanel{
 		if (this.comment == null) {
 			return;
 		}
-		this.commentContent.setText(comment.get("content").getAsString());
-		JsonObject userInfo = comment.getAsJsonObject("userInfo");
-		String avatarLarge = userInfo.get("avatarLarge").getAsString();
+		JsonObject comment_info = comment.get("comment_info").getAsJsonObject();
+		this.commentContent.setText(comment_info.get("comment_content").getAsString());
+		JsonObject userInfo = comment.getAsJsonObject("user_info");
+		String avatarLarge = userInfo.get("avatar_large").getAsString();
 		if (!StringUtil.isNullOrEmpty(avatarLarge)) {
 			ImageIcon icon = new ImageIcon(new URL(avatarLarge));
 			Image image = ImageUtils.scaleImage(icon.getImage(), 40, 40);
@@ -66,27 +67,27 @@ public class CommentItem extends JPanel{
 			icon.setImage(result);
 			this.avatar.setIcon(icon);
 		}
-		this.nickname.setText(userInfo.get("username").getAsString());
-		this.job.setText(userInfo.get("jobTitle").getAsString());
+		this.nickname.setText(userInfo.get("user_name").getAsString());
+		this.job.setText(userInfo.get("job_title").getAsString());
 		this.company.setText(userInfo.get("company").getAsString());
-		this.like.setText(String.valueOf(comment.get("likesCount").getAsString()));
-		this.createtime.setText(DateUtils.getDistanceDate(comment.get("createdAt").getAsString()));
+		this.like.setText(String.valueOf(comment_info.get("digg_count").getAsString()));
+		this.createtime.setText(DateUtils.getDistanceDate(comment_info.get("ctime").getAsString()));
 		commentReply.setCellRenderer(new CommentReplyCellRender());
 		PinsService instance = PinsService.getInstance(project);
-		if (comment.get("replyCount").getAsInt() > 0) {
+		if (comment_info.get("reply_count").getAsInt() > 0) {
 			this.replyPanel.setVisible(true);
-			instance.getCommentReply(pageNum, pageSize, commentID, result -> {
-				if (result.isSuccess()) {
-					JsonObject resultData = (JsonObject) result.getResult();
-					JsonObject data = resultData.getAsJsonObject("d");
-					validatePage(data);
-					JsonArray replys = data.getAsJsonArray("comments");
-					commentReplys.addAll(replys);
-					refreshData();
-				} else {
-					replyPanel.setVisible(false);
-				}
-			});
+//			instance.getCommentReply(pageNum, pageSize, commentID, result -> {
+//				if (result.isSuccess()) {
+//					JsonObject resultData = (JsonObject) result.getResult();
+//					JsonObject data = resultData.getAsJsonObject("d");
+//					validatePage(data);
+//					JsonArray replys = data.getAsJsonArray("comments");
+//					commentReplys.addAll(replys);
+//					refreshData();
+//				} else {
+//					replyPanel.setVisible(false);
+//				}
+//			});
 		} else {
 			this.replyPanel.setVisible(false);
 		}

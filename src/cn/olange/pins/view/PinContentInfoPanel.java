@@ -1,5 +1,6 @@
 package cn.olange.pins.view;
 
+import cn.olange.pins.event.ImageClickEvent;
 import cn.olange.pins.utils.DateUtils;
 import cn.olange.pins.utils.ImageUtils;
 import com.google.gson.JsonArray;
@@ -40,6 +41,7 @@ public class PinContentInfoPanel extends JPanel {
 	private Project project;
 	private boolean showCommentDialog;
 	private String contentStr;
+	private ImageClickEvent imageClickEvent;
 
 	public PinContentInfoPanel(JsonObject pinItem, Project project, boolean showCommentDialog) {
 		this.showCommentDialog = showCommentDialog;
@@ -54,20 +56,14 @@ public class PinContentInfoPanel extends JPanel {
 		}
 	}
 
-	public PinContentInfoPanel(JsonObject pinItem, Project project) {
+	public PinContentInfoPanel(JsonObject pinItem, Project project, ImageClickEvent imageClickEvent) {
 		this(pinItem, project,false);
+		this.imageClickEvent = imageClickEvent;
 	}
 
 	private void initData() throws IOException {
-		JsonObject node = this.pinItem.getAsJsonObject("node");
-		JsonArray actors = node.getAsJsonArray("actors");
-		JsonObject actor ;
-		if (actors != null) {
-			actor = (JsonObject) actors.get(0);
-		} else {
-			actor = node.getAsJsonObject("user");
-		}
-		String avatarUrl = actor.get("avatarLarge").getAsString();
+		JsonObject actor  = this.pinItem.get("author_user_info").getAsJsonObject();
+		String avatarUrl = actor.get("avatar_large").getAsString();
 		if (StringUtils.isNotEmpty(avatarUrl)) {
 			URL avatarLarge = new URL(avatarUrl);
 			ImageIcon icon = new ImageIcon(avatarLarge);
@@ -76,41 +72,36 @@ public class PinContentInfoPanel extends JPanel {
 			icon.setImage(result);
 			this.avatar.setIcon(icon);
 		}
-		this.nickname.setText(actor.get("username").getAsString());
-		this.job.setText(actor.get("jobTitle").getAsString());
+		this.nickname.setText(actor.get("user_name").getAsString());
+		this.job.setText(actor.get("job_title").getAsString());
 		this.company.setText(actor.get("company").getAsString());
 
-		JsonArray targets = node.getAsJsonArray("targets");
-		JsonObject target;
-		if (targets != null) {
-			target = (JsonObject) targets.get(0);
-		} else {
-			target = node;
-		}
+		JsonObject target = this.pinItem.getAsJsonObject("msg_Info");
+
 		this.contentStr = target.get("content").getAsString();
 		this.initExpandContent();
-		this.prise.setText(target.get("likeCount").getAsString());
-		Integer commentCount = target.get("commentCount").getAsInt();
+		this.prise.setText(target.get("digg_count").getAsString());
+		int commentCount = target.get("comment_count").getAsInt();
 		this.comment.setText(String.valueOf(commentCount));
-		String createdAt = target.get("createdAt").getAsString();
+		String createdAt = target.get("ctime").getAsString();
 		this.createTime.setText(DateUtils.getDistanceDate(createdAt));
 		this.browswebtn.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				BrowserLauncher.getInstance().browse("https://juejin.im/pin/" + node.get("id").getAsString(), WebBrowserManager.getInstance().getFirstActiveBrowser());
+				BrowserLauncher.getInstance().browse("https://juejin.im/pin/" + PinContentInfoPanel.this.pinItem.get("msg_id").getAsString(), WebBrowserManager.getInstance().getFirstActiveBrowser());
 			}
 		});
-		if (commentCount > 0 && this.showCommentDialog) {
-			this.comment.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					PinDetailDialog pinDetailDialog = new PinDetailDialog(pinItem, project);
-					pinDetailDialog.show();
-				}
-			});
-		}
+//		if (commentCount > 0 && this.showCommentDialog) {
+//			this.comment.addMouseListener(new MouseAdapter() {
+//				@Override
+//				public void mouseClicked(MouseEvent e) {
+//					PinDetailDialog pinDetailDialog = new PinDetailDialog(pinItem, project);
+//					pinDetailDialog.show();
+//				}
+//			});
+//		}
 
-		JsonArray pictures = target.getAsJsonArray("pictures");
+		JsonArray pictures = target.getAsJsonArray("pic_list");
 		if (pictures != null) {
 			int row = pictures.size() % 3 == 0 ? pictures.size() / 3 : pictures.size() / 3 + 1;
 			this.imageContent.setLayout(new GridLayoutManager(row+1, 3, new Insets(10, 10, 0, 10), -1, 10));
@@ -126,8 +117,9 @@ public class PinContentInfoPanel extends JPanel {
 				jLabel.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						ImagePreViewDialog imagePreViewDialog = new ImagePreViewDialog(project, pictures, finalI);
-						imagePreViewDialog.show();
+						if (imageClickEvent != null) {
+							imageClickEvent.viewImage(pictures, finalI);
+						}
 					}
 				});
 				int grow = i / 3;
@@ -143,13 +135,13 @@ public class PinContentInfoPanel extends JPanel {
 				this.imageContent.add(label, new GridConstraints(0  , 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
 			}
 		}
-		JsonElement jsonElement = target.get("topic");
-		if (jsonElement != null && !jsonElement.isJsonNull()) {
-			this.topic.setVisible(true);
-			this.topic.setText(jsonElement.getAsJsonObject().get("title").getAsString());
-		} else {
-			this.topic.setVisible(false);
-		}
+//		JsonElement jsonElement = target.get("topic");
+//		if (jsonElement != null && !jsonElement.isJsonNull()) {
+//			this.topic.setVisible(true);
+//			this.topic.setText(jsonElement.getAsJsonObject().get("title").getAsString());
+//		} else {
+//			this.topic.setVisible(false);
+//		}
 	}
 
 	private void initExpandContent() {

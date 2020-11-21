@@ -4,10 +4,19 @@ import cn.olange.pins.imageview.JImagePane;
 import cn.olange.pins.imageview.JLoadDialog;
 import com.google.gson.JsonArray;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.CommonShortcuts;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.LoadingDecorator;
+import com.intellij.openapi.ui.OnePixelDivider;
+import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.SystemInfo;
+import com.intellij.ui.PopupBorder;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +49,8 @@ public class ImagePreViewDialog extends DialogWrapper implements Disposable {
 	JScrollBar h_bar = null;
 
 	protected ImagePreViewDialog(@Nullable Project project, JsonArray images, int index) {
-		super(project);
+		super(project,false, IdeModalityType.MODELESS);
+
 		this.setTitle("图片预览");
 		this.images = images;
 		this.index = index;
@@ -61,9 +71,43 @@ public class ImagePreViewDialog extends DialogWrapper implements Disposable {
 		});
 		this.scroll.setViewportView(imagePane);
 		this.init();
+		this.setUndecorated(true);
+		Disposer.register(project, this::closeImmediately);
+		final Window w = this.getPeer().getWindow();
+		AnAction escape = ActionManager.getInstance().getAction("EditorEscape");
+		JRootPane root = ((RootPaneContainer) w).getRootPane();
+		DumbAwareAction.create((e) -> {
+			ImagePreViewDialog.this.closeImmediately();
+		}).registerCustomShortcutSet(escape == null ? CommonShortcuts.ESCAPE : escape.getShortcutSet(), root, this.myDisposable);
+		w.addWindowListener(new WindowAdapter() {
+			public void windowOpened(WindowEvent e) {
+				w.addWindowFocusListener(new WindowAdapter() {
+					public void windowLostFocus(WindowEvent e) {
+						Window oppositeWindow = e.getOppositeWindow();
+						if (oppositeWindow != w && (oppositeWindow == null || oppositeWindow.getOwner() != w)) {
+							if (oppositeWindow != null) {
+								ImagePreViewDialog.this.doCancelAction();
+							}
+						}
+					}
+				});
+			}
+		});
+		root.setWindowDecorationStyle(0);
+		if (SystemInfo.isMac && UIUtil.isUnderDarcula()) {
+			root.setBorder(PopupBorder.Factory.createColored(OnePixelDivider.BACKGROUND));
+		} else {
+			root.setBorder(PopupBorder.Factory.create(true, true));
+		}
 		this.initData();
 		String imageUrl = this.images.get(index).getAsString();
 		previewImage(imageUrl);
+	}
+
+	private void closeImmediately() {
+		if (this.isVisible()) {
+			this.doCancelAction();
+		}
 	}
 
 	@NotNull

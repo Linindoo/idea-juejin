@@ -26,8 +26,8 @@ public class PinListCellRender extends ColoredListCellRenderer {
 			return this;
 		}
 		JsonObject pins = (JsonObject) value;
-		String id = pins.getAsJsonObject("node").get("id").getAsString();
-		Component component = componentMap.get(id);
+		String id = pins.get("msg_id").getAsString();
+       		Component component = componentMap.get(id);
 		if (component == null) {
 			component = new PinItemDecorator(pins,project);
 			componentMap.put(id, component);

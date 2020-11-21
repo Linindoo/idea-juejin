@@ -19,14 +19,9 @@ public class DateUtils {
 	private static final String ONE_YEAR_AGO = "年前";
 
 	public static Date formatDate(String time) {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
-		try {
-			time = time.replace("Z", " UTC");
-			return sdf.parse(time);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		return null;
+		Date date = new Date();
+		date.setTime(Long.parseLong(time + "000"));
+		return date;
 	}
 
 	public static String getDistanceDate(String datetime) {

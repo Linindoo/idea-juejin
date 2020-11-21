@@ -2,6 +2,7 @@ package cn.olange.pins.imageview;
 
 import cn.olange.pins.utils.ImageUtils;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.util.ui.UIUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -116,7 +117,7 @@ public class JImagePane extends JPanel {
 					/*&& ( e.isShiftDown() || e.isControlDown() )*/) {
 				wheel_lock = true;
 				if ( e.getWheelRotation() < 0 ) {
-					ApplicationManager.getApplication().executeOnPooledThread(new Runnable(){
+					UIUtil.invokeAndWaitIfNeeded(new Runnable(){
 						@Override
 						public void run() {
 							larger( WHEEL_ZOOM_OFFSET );
@@ -124,12 +125,9 @@ public class JImagePane extends JPanel {
 						}
 					});
 				} else {
-					ApplicationManager.getApplication().executeOnPooledThread(new Runnable(){
-						@Override
-						public void run() {
-							smaller( WHEEL_ZOOM_OFFSET );
-							wheel_lock = false;
-						}
+					UIUtil.invokeAndWaitIfNeeded((Runnable) ()->{
+						smaller( WHEEL_ZOOM_OFFSET );
+						wheel_lock = false;
 					});
 				}
 
@@ -236,8 +234,10 @@ public class JImagePane extends JPanel {
 
 	public void setPaneSize( Dimension size ) {
 		if ( size != null ) {
-			setPreferredSize( new Dimension( size.width - 25, size.height - 30 ) );
-			setSize(size);
+			UIUtil.invokeAndWaitIfNeeded((Runnable) ()->{
+				setPreferredSize( new Dimension( size.width - 25, size.height - 30 ) );
+				setSize(size);
+			});
 		}
 	}
 

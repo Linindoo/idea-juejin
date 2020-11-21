@@ -45,13 +45,25 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
-    <toolWindow id="pins" icon="/icons/juejin.png" anchor="right" factoryClass="cn.olange.pins.PinsToolWindowFactory"/>
+    <toolWindow id="沸点" icon="/icons/juejin.png" anchor="right" factoryClass="cn.olange.pins.PinsToolWindowFactory"/>
     <projectService serviceInterface="cn.olange.pins.service.PinsService"
                     serviceImplementation="cn.olange.pins.service.PinsService"/>
+    <applicationService serviceInterface="cn.olange.pins.setting.JuejinPersistentConfig"
+                        serviceImplementation="cn.olange.pins.setting.JuejinPersistentConfig"/>
+    <applicationConfigurable groupId="tools" displayName="juejin plugin" id="juejin.pin"
+                             instance="cn.olange.pins.setting.SettingConfigurable"/>
   </extensions>
 
   <actions>
-    <!-- Add your actions here -->
+    <group id="Juejuin.Category" class="cn.olange.pins.action.CatalogGroup"
+           popup="true" text="Category" description="板块">
+    </group>
+    <action id="juejin.LoginAction" class="cn.olange.pins.action.LoginAction"
+            text="登录" description="Sign in" icon="/icons/login.png">
+    </action>
+    <action id="juejin.LogoutAction" class="cn.olange.pins.action.LogoutAction"
+            text="注销" description="Sign out" icon="/icons/logout.png">
+    </action>
   </actions>
 
 </idea-plugin>
