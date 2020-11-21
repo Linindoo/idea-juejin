@@ -50,8 +50,8 @@ public class CommentList extends JPanel implements Disposable {
 		super();
 		this.project = project;
 		this.pinID = pinID;
-		loadingDecorator = new LoadingDecorator(main, this, 0);
 		this.commentAlarm = new Alarm();
+		loadingDecorator = new LoadingDecorator(main, this, 0);
 		this.initData();
 	}
 
@@ -66,12 +66,11 @@ public class CommentList extends JPanel implements Disposable {
 		jxTree.setRootVisible(false);
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("");
 		jxTree.setModel(new DefaultTreeModel(root));
-//		jxTree.addTreeWillExpandListener(new TreeWillListener(tree, toolWindow, project));
 		JBScrollPane scrollPane = new JBScrollPane(this.jxTree) {
 			public Dimension getMinimumSize() {
 				Dimension size = super.getMinimumSize();
-				size.height = jxTree.getPreferredScrollableViewportSize().height;
 				size.width = jxTree.getPreferredScrollableViewportSize().width;
+				size.height = jxTree.getPreferredScrollableViewportSize().height;
 				return size;
 			}
 		};
@@ -80,13 +79,17 @@ public class CommentList extends JPanel implements Disposable {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
 				TreePath selectionPath = jxTree.getSelectionPath();
+				if (selectionPath == null) {
+					return;
+				}
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectionPath.getLastPathComponent();
 				if (node.getUserObject() instanceof NeedMore) {
 					System.out.println("more");
 					TreePath parentPath = selectionPath.getParentPath();
 					DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-					if (parentNode.getUserObject() instanceof CommentTreeNode) {
-						CommentTreeNode treeNode = (CommentTreeNode) parentNode.getUserObject();
+					parentNode.remove(node);
+					if (parentNode.getUserObject() instanceof CommentNode) {
+						CommentNode treeNode = (CommentNode) parentNode.getUserObject();
 						getCommentReply(treeNode, parentNode);
 					} else {
 						loadMoreComment(parentNode);
@@ -94,25 +97,25 @@ public class CommentList extends JPanel implements Disposable {
 				}
 			}
 		});
-		this.scheduleComment();
+		this.scheduleComment(root);
 	}
 
 	private void loadMoreComment(DefaultMutableTreeNode parentNode) {
+		this.scheduleComment(parentNode);
+	}
+
+	private void getCommentReply(CommentNode treeNode, DefaultMutableTreeNode parentNode) {
 
 	}
 
-	private void getCommentReply(CommentTreeNode treeNode, DefaultMutableTreeNode parentNode) {
-
-	}
-
-	public void scheduleComment() {
+	public void scheduleComment(DefaultMutableTreeNode parentNode) {
 		if (this.commentAlarm != null && !this.commentAlarm.isDisposed()) {
 			this.commentAlarm.cancelAllRequests();
-			this.commentAlarm.addRequest(this::findComments, 100);
+			this.commentAlarm.addRequest(()-> findComments(parentNode), 100);
 		}
 	}
 
-	private void findComments() {
+	private void findComments(DefaultMutableTreeNode parentNode) {
 		final ModalityState state = ModalityState.current();
 		if (this.progressIndicatorBase != null && !this.progressIndicatorBase.isCanceled()) {
 			this.progressIndicatorBase.cancel();
@@ -126,7 +129,7 @@ public class CommentList extends JPanel implements Disposable {
 		};
 		this.progressIndicatorBase = progressIndicatorWhenSearchStarted;
 		final AtomicInteger resultsCount = new AtomicInteger();
-		loadingDecorator.startLoading(false);
+		loadingDecorator.startLoading(true);
 		ProgressIndicatorUtils.scheduleWithWriteActionPriority(this.progressIndicatorBase, new ReadTask() {
 			public ReadTask.Continuation performInReadAction(@NotNull ProgressIndicator indicator) {
 				if (this.isCancelled()) {
@@ -139,15 +142,14 @@ public class CommentList extends JPanel implements Disposable {
 							PinsService instance = PinsService.getInstance(project);
 							instance.getComments(cursor, pageSize, pinID, result -> {
 								if (result.isSuccess()) {
-									JsonObject commentResult = (JsonObject) result.getResult();
-									JsonArray comments = commentResult.getAsJsonArray("data");
-									commentData.addAll(comments);
 									UIUtil.invokeAndWaitIfNeeded((Runnable) () -> {
+										JsonObject commentResult = (JsonObject) result.getResult();
+										cursor = commentResult.get("cursor").getAsString();
+										JsonArray comments = commentResult.getAsJsonArray("data");
 										DefaultTreeModel treeMode = (DefaultTreeModel) jxTree.getModel();
-										DefaultMutableTreeNode root = (DefaultMutableTreeNode) jxTree.getModel().getRoot();
-										root.removeAllChildren();
-										for (int i = 0; i < commentData.size(); i++) {
-											JsonObject comment = commentData.get(i).getAsJsonObject();
+										DefaultMutableTreeNode root = parentNode;
+										for (int i = 0; i < comments.size(); i++) {
+											JsonObject comment = comments.get(i).getAsJsonObject();
 											DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(1, comment));
 											root.add(commentNode);
 											JsonArray reply_infos = comment.getAsJsonArray("reply_infos");
@@ -165,9 +167,9 @@ public class CommentList extends JPanel implements Disposable {
 										if (commentResult.get("has_more").getAsBoolean()) {
 											root.add(new DefaultMutableTreeNode(new NeedMore()));
 										}
-										treeMode.reload();
-										jxTree.updateUI();
-										jxTree.expandRow(0);
+										treeMode.reload(root);
+//										jxTree.updateUI();
+//										jxTree.expandRow(0);
 										loadingDecorator.stopLoading();
 									});
 								}
@@ -194,34 +196,11 @@ public class CommentList extends JPanel implements Disposable {
 
 			public void onCanceled(@NotNull ProgressIndicator indicator) {
 				if (CommentList.this.isShowing() && progressIndicatorWhenSearchStarted == CommentList.this.progressIndicatorBase) {
-					CommentList.this.scheduleComment();
+					CommentList.this.scheduleComment(parentNode);
 				}
 			}
 		});
 	}
-
-//	private void refreshData() {
-//		for (int i = 0; i < this.commentData.size(); i++) {
-//			JsonObject comment = (JsonObject) this.commentData.get(i);
-//			CommentItem commentInfo = new CommentItem(comment, project);
-//			this.commentbox.add(commentInfo);
-//		}
-//		this.commentbox.updateUI();
-//	}
-//
-//
-//	private void validatePage(JsonObject data) {
-//		this.cursor = data.get("cursor").getAsString();
-//		boolean has_more = data.get("has_more").getAsBoolean();
-//		UIUtil.invokeAndWaitIfNeeded((Runnable) () -> {
-//			if (has_more) {
-//				this.loadmore.setVisible(false);
-//			} else {
-//				this.loadmore.setVisible(true);
-//			}
-//		});
-//
-//	}
 
 	@Override
 	public void dispose() {

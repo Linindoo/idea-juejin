@@ -91,15 +91,6 @@ public class PinContentInfoPanel extends JPanel {
 				BrowserLauncher.getInstance().browse("https://juejin.im/pin/" + PinContentInfoPanel.this.pinItem.get("msg_id").getAsString(), WebBrowserManager.getInstance().getFirstActiveBrowser());
 			}
 		});
-//		if (commentCount > 0 && this.showCommentDialog) {
-//			this.comment.addMouseListener(new MouseAdapter() {
-//				@Override
-//				public void mouseClicked(MouseEvent e) {
-//					PinDetailDialog pinDetailDialog = new PinDetailDialog(pinItem, project);
-//					pinDetailDialog.show();
-//				}
-//			});
-//		}
 
 		JsonArray pictures = target.getAsJsonArray("pic_list");
 		if (pictures != null) {

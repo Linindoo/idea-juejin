@@ -3,58 +3,45 @@ package cn.olange.pins.view;
 import cn.olange.pins.event.ImageClickEvent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.intellij.find.SearchTextArea;
-import com.intellij.find.actions.ShowUsagesAction;
 import com.intellij.ide.IdeEventQueue;
 import com.intellij.ide.ui.UISettings;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.CommonShortcuts;
-import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.util.ProgressIndicatorBase;
-import com.intellij.openapi.progress.util.ProgressIndicatorUtils;
-import com.intellij.openapi.progress.util.ReadTask;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.DialogWrapperPeer;
 import com.intellij.openapi.ui.LoadingDecorator;
 import com.intellij.openapi.ui.OnePixelDivider;
-import com.intellij.openapi.ui.impl.DialogWrapperPeerImpl;
 import com.intellij.openapi.util.DimensionService;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.IdeGlassPane;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
-import com.intellij.ui.*;
+import com.intellij.ui.PopupBorder;
+import com.intellij.ui.WindowMoveListener;
+import com.intellij.ui.WindowResizeListener;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
-import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.table.JBTable;
 import com.intellij.util.Alarm;
-import com.intellij.util.ui.*;
-import com.jetbrains.jdi.EventRequestManagerImpl;
+import com.intellij.util.ui.AsyncProcessIcon;
+import com.intellij.util.ui.EmptyIcon;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import net.miginfocom.swing.MigLayout;
-import org.jdesktop.swingx.JXTextArea;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PinContentDialog extends JBPanel<PinContentDialog> {
@@ -69,7 +56,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 	private LoadingDecorator myLoadingDecorator;
 	private final AtomicBoolean myCanClose;
 	private final AtomicBoolean myIsPinned;
-	private Alarm mySearchRescheduleOnCancellationsAlarm;
 	public static final String SERVICE_KEY = "juejin.pin";
 	private boolean showImageDialog = false;
 
@@ -81,11 +67,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		this.myDisposable = Disposer.newDisposable();
 		this.myCanClose = new AtomicBoolean(true);
 		this.myIsPinned = new AtomicBoolean(false);
-		Disposer.register(this.myDisposable, () -> {
-			if (this.mySearchRescheduleOnCancellationsAlarm != null) {
-				Disposer.dispose(this.mySearchRescheduleOnCancellationsAlarm);
-			}
-		});
 		initComponents();
 	}
 
@@ -119,11 +100,9 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		bottomPanel.add(textField, BorderLayout.CENTER);
 		bottomPanel.add(new JButton("评论"), BorderLayout.EAST);
 		this.add(bottomPanel, "pushx, growx, sx 10, gaptop 4, wrap");
-		this.mySearchRescheduleOnCancellationsAlarm = new Alarm();
 		CommentList commentList = new CommentList(project, pinInfo.get("msg_id").getAsString());
 		this.add(commentList, "pushx, growx, growy, pushy, sx 10, wrap, pad 4 4 4 4");
 //		bottomPanel.add(myOKButton, BorderLayout.EAST);
-
 	}
 
 
