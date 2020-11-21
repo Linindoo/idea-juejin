@@ -37,15 +37,14 @@ public class LoginAction extends AnAction {
         JsonObject userInfo = pinsService.getUserInfo(config.getCookieValue());
         if (userInfo == null || userInfo.isJsonNull()) {
             Notifications.Bus.notify(new Notification(Constant.NOTIFICATION_GROUP, "登录失败", "请重试", NotificationType.WARNING), anActionEvent.getProject());
-        } else if (userInfo.get("err_no").getAsInt() == 0) {
+        } else if (!userInfo.get("data").isJsonNull()) {
             String userName = userInfo.get("data").getAsJsonObject().get("user_name").getAsString();
             config.setNickname(userName);
             config.setLogined(true);
             PinsToolWindowFactory.updateTitle(anActionEvent.getProject(), userName);
             JuejinPersistentConfig.getInstance().setInitConfig(config);
         } else {
-            System.out.println(userInfo.toString());
-            Notifications.Bus.notify(new Notification(Constant.NOTIFICATION_GROUP, "登录失败", userInfo.get("err_msg").getAsString(), NotificationType.WARNING), anActionEvent.getProject());
+            Notifications.Bus.notify(new Notification(Constant.NOTIFICATION_GROUP, "登录失败", "请确保用户参数配置正确", NotificationType.WARNING), anActionEvent.getProject());
         }
     }
 }

@@ -1,7 +1,5 @@
 package cn.olange.pins.model;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class Config {
     private boolean logined;
@@ -10,8 +8,7 @@ public class Config {
     private String password;
     private String curentCatalog;
     private String cookieValue;
-
-    private Map<String, String> userCookie = new HashMap<>();
+    private String cookieType = Constant.cookieType.DIRECT.name();
 
     public Config() {
         this.curentCatalog = "hot";
@@ -41,14 +38,6 @@ public class Config {
         this.curentCatalog = curentCatalog;
     }
 
-    public Map<String, String> getUserCookie() {
-        return userCookie;
-    }
-
-    public void setUserCookie(Map<String, String> userCookie) {
-        this.userCookie = userCookie;
-    }
-
     public boolean isLogined() {
         return logined;
     }
@@ -71,5 +60,13 @@ public class Config {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public String getCookieType() {
+        return cookieType;
+    }
+
+    public void setCookieType(String cookieType) {
+        this.cookieType = cookieType;
     }
 }
