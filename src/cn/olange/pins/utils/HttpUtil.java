@@ -25,12 +25,18 @@ import java.security.cert.X509Certificate;
 
 public class HttpUtil {
 	public static String postJson(String url, String data) throws IOException {
+		return postJson(url, data, "");
+	}
+	public static String postJson(String url, String data, String cookie) throws IOException {
 		CloseableHttpClient httpClient = createSSLClientDefault();
 		ResponseHandler<String> responseHandler = new BasicResponseHandler();
 		HttpPost httpPost = new HttpPost(url);
 		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(8000).setConnectTimeout(8000).build();
 		httpPost.setConfig(requestConfig);
 		StringEntity requestEntity = new StringEntity(data,"utf-8");
+		if (StringUtils.isNotEmpty(cookie)) {
+			httpPost.addHeader("cookie",cookie);
+		}
 		httpPost.addHeader("Content-Type", "application/json");
 		httpPost.addHeader("X-Agent", "Juejin/Web");
 		httpPost.addHeader(":authority", "apinew.juejin.im");

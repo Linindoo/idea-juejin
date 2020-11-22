@@ -66,6 +66,7 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 	private String endCursor = "0";
 	private Alarm mySearchRescheduleOnCancellationsAlarm;
 	private volatile ProgressIndicatorBase myResultsPreviewSearchProgress;
+	private PinContentDialog pinDetailDialog;
 
 	public PinsToolWindowPanel(Project project, String topic) {
 		super(Boolean.TRUE, Boolean.TRUE);
@@ -115,8 +116,12 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 					Object myData = pinTable.getModel().getValueAt(selectedRow, 0);
 					if (myData instanceof JsonObject) {
 						JsonObject jsonObject = (JsonObject) myData;
-						PinContentDialog pinDetailDialog = new PinContentDialog(project, jsonObject);
+						long currentTimeMillis = System.currentTimeMillis();
+						System.out.println("start:" + currentTimeMillis);
+						pinDetailDialog = new PinContentDialog(project, jsonObject);
+						System.out.println("cost:" + (System.currentTimeMillis() - currentTimeMillis));
 						pinDetailDialog.showUI();
+						System.out.println("showUICost: " + (System.currentTimeMillis() - currentTimeMillis));
 					} else if (myData instanceof NeedMore) {
 						scheduleResultsUpdate();
 					}
@@ -291,6 +296,8 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 	public Object getData(@NotNull String dataId) {
 		if (DataKeys.JUEJIN_PROJECTS_PINPANEL.is(dataId)) {
 			return this;
+		} else if (DataKeys.JUEJIN_PINCONTENTDETAIL_DAILOG.is(dataId)) {
+			return pinDetailDialog;
 		}
 		return null;
 	}

@@ -1,6 +1,7 @@
 package cn.olange.pins.view;
 
 import cn.olange.pins.event.ImageClickEvent;
+import cn.olange.pins.model.ReplyUserActionButton;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.ide.IdeEventQueue;
@@ -28,7 +29,6 @@ import com.intellij.ui.WindowResizeListener;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
-import com.intellij.util.Alarm;
 import com.intellij.util.ui.AsyncProcessIcon;
 import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBUI;
@@ -58,6 +58,7 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 	private final AtomicBoolean myIsPinned;
 	public static final String SERVICE_KEY = "juejin.pin";
 	private boolean showImageDialog = false;
+	private CommentList commentList;
 
 
 	public PinContentDialog(Project project, JsonObject pinInfo) {
@@ -95,14 +96,19 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		};
 		PinContentInfoPanel pinContentInfoPanel = new PinContentInfoPanel(this.pinInfo, project, imageClickEvent);
 		this.add(pinContentInfoPanel, "pushx, growx, sx 10, gaptop 4, wrap");
-		JTextField textField = new JTextField();
-		JPanel bottomPanel = new JPanel(new BorderLayout());
-		bottomPanel.add(textField, BorderLayout.CENTER);
-		bottomPanel.add(new JButton("评论"), BorderLayout.EAST);
-		this.add(bottomPanel, "pushx, growx, sx 10, gaptop 4, wrap");
-		CommentList commentList = new CommentList(project, pinInfo.get("msg_id").getAsString());
+		this.add(new JSeparator(), "pushx, growx, sx 10, gaptop 4, wrap");
+		commentList = new CommentList(project, pinInfo.get("msg_id").getAsString());
 		this.add(commentList, "pushx, growx, growy, pushy, sx 10, wrap, pad 4 4 4 4");
-//		bottomPanel.add(myOKButton, BorderLayout.EAST);
+	}
+
+	public void showImageDialog(JsonArray pictures, int index) {
+		ImagePreViewDialog imagePreViewDialog = new ImagePreViewDialog(project, pictures, index);
+		showImageDialog = true;
+		Disposer.register(imagePreViewDialog.getDisposable(),()->{
+			showImageDialog = false;
+			PinContentDialog.this.myDialog.getContentPanel().requestFocus(true);
+		});
+		imagePreViewDialog.show();
 	}
 
 
@@ -111,7 +117,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 			if (this.myDialog != null && !Disposer.isDisposed(this.myDialog.getDisposable())) {
 				this.myDialog.doCancelAction();
 			}
-
 			if (this.myDialog == null || Disposer.isDisposed(this.myDialog.getDisposable())) {
 				myDialog = new DialogWrapper(this.project, true, DialogWrapper.IdeModalityType.MODELESS) {
 					{
@@ -240,8 +245,10 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 				} else {
 					w.setLocationRelativeTo(parent);
 				}
-
 				this.myDialog.show();
+				ApplicationManager.getApplication().invokeLater(()->{
+					commentList.scheduleComment(null);
+				});
 				w.addWindowListener(new WindowAdapter() {
 					public void windowOpened(WindowEvent e) {
 						w.addWindowFocusListener(new WindowAdapter() {

@@ -5,6 +5,7 @@ import cn.olange.pins.model.Config;
 import cn.olange.pins.model.Handler;
 import cn.olange.pins.setting.JuejinPersistentConfig;
 import cn.olange.pins.utils.HttpUtil;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.application.ApplicationManager;
@@ -14,7 +15,7 @@ import com.intellij.openapi.project.Project;
 import java.io.IOException;
 
 public class PinsService {
-	private final static String COMMENT_URL = "https://hot-topic-comment-wrapper-ms.juejin.im/v1/reply/";
+	private final static String COMMENT_URL = "https://api.juejin.cn/interact_api/v1/reply/list";
 	public static PinsService getInstance(Project project) {
 		return ServiceManager.getService(project, PinsService.class);
 	}
@@ -52,14 +53,21 @@ public class PinsService {
 		}
 	}
 
-	public void getCommentReply(int pageNum, int pageSize,String commentID, Handler<AsyncResult> handler) {
+	public void getCommentReply(String cursor, int pageSize, String commentID, String pinID, Handler<AsyncResult> handler) {
 		try {
-			String json = HttpUtil.getJson(COMMENT_URL + commentID + "?pageNum=" + pageNum + "&pageSize=" + pageSize);
+			JsonObject params = new JsonObject();
+			params.addProperty("client_type", 2608);
+			params.addProperty("comment_id", commentID);
+			params.addProperty("cursor", cursor);
+			params.addProperty("item_id", pinID);
+			params.addProperty("item_type", 4);
+			params.addProperty("limit", pageSize);
+			String json = HttpUtil.postJson(COMMENT_URL, params.toString());
 			JsonObject result = JsonParser.parseString(json).getAsJsonObject();
 			handler.handle(new AsyncResult(true, result));
 		} catch (IOException e) {
 			e.printStackTrace();
-			handler.handle(new AsyncResult(false,e.getMessage()));
+			handler.handle(new AsyncResult(false, e.getMessage()));
 		}
 	}
 
@@ -72,4 +80,41 @@ public class PinsService {
 		}
 		return new JsonObject();
 	}
+
+	public JsonObject comment(String pinID, String replyContent, String cookieValue) {
+		JsonObject params = new JsonObject();
+		params.addProperty("client_type", 2608);
+		params.addProperty("comment_content", replyContent);
+		params.add("comment_pics", new JsonArray());
+		params.addProperty("item_id", pinID);
+		params.addProperty("item_type", 4);
+		try {
+			String resp = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/comment/publish", params.toString(), cookieValue);
+			System.out.println(resp);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new JsonObject();
+	}
+
+	public JsonObject replyComment(String pinID, String commentID, String replyID, String replyUserID, String replyContent, String cookieValue) {
+		JsonObject params = new JsonObject();
+		params.addProperty("client_type", 2608);
+		params.addProperty("reply_content", replyContent);
+		params.add("reply_pics", new JsonArray());
+		params.addProperty("reply_to_comment_id", commentID);
+		params.addProperty("reply_to_reply_id", replyID);
+		params.addProperty("reply_to_user_id", replyUserID);
+		params.addProperty("item_id", pinID);
+		params.addProperty("item_type", 4);
+		try {
+			String resp = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/reply/publish", params.toString(), cookieValue);
+			System.out.println(resp);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new JsonObject();
+	}
+
+
 }
