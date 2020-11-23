@@ -45,10 +45,8 @@ public class CommentList extends JPanel implements Disposable {
 	private int pageSize = 20;
 	private int pageNum = 1;
 	private String cursor = "0";
-	private LoadingDecorator loadingDecorator;
 	private Alarm commentAlarm;
 	private SimpleTree jxTree;
-	private volatile ProgressIndicatorBase progressIndicatorBase;
 	private DefaultMutableTreeNode root;
 	private Map<String, String> commentReplyCursorMap = new HashMap<>();
 	private JsonObject replyCommentInfo;
@@ -95,17 +93,18 @@ public class CommentList extends JPanel implements Disposable {
 						} else {
 							JsonElement reply_info = replyCommentInfo.get("reply_info");
 							String commentID, replyID = "", replyUserID = "";
-							if (reply_info.isJsonNull()) {
+							if (reply_info == null || reply_info.isJsonNull()) {
 								commentID = replyCommentInfo.get("comment_id").getAsString();
 							} else {
 								commentID = reply_info.getAsJsonObject().get("reply_comment_id").getAsString();
 								replyID = reply_info.getAsJsonObject().get("reply_id").getAsString();
-								replyUserID = reply_info.getAsJsonObject().get("2541726583234718").getAsString();
+								replyUserID = reply_info.getAsJsonObject().get("reply_user_iD").getAsString();
 							}
 							pinsService.replyComment(pinID, commentID, replyID, replyUserID, text, config.getCookieValue());
 						}
 						replyCommentInfo = null;
 						replyPanel.setVisible(false);
+						cursor = "0";
 						scheduleComment(null);
 					});
 				}
@@ -118,22 +117,16 @@ public class CommentList extends JPanel implements Disposable {
 		bottomPanel.add(commentBtn, BorderLayout.EAST);
 		this.add(bottomPanel, BorderLayout.NORTH);
 		jxTree = new SimpleTree();
-		JBScrollPane scrollPane = new JBScrollPane(this.jxTree) {
-			public Dimension getMinimumSize() {
-				Dimension size = super.getMinimumSize();
-				size.width = jxTree.getPreferredScrollableViewportSize().width;
-				size.height = jxTree.getPreferredScrollableViewportSize().height;
-				return size;
-			}
-		};
+		JBScrollPane scrollPane = new JBScrollPane(this.jxTree);
 		scrollPane.setBorder(JBUI.Borders.empty());
-		loadingDecorator = new LoadingDecorator(scrollPane, this, 0);
-		this.add(loadingDecorator.getComponent(), BorderLayout.CENTER);
+		this.add(scrollPane, BorderLayout.CENTER);
 		jxTree.setOpaque(false);
 		jxTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		jxTree.setRootVisible(false);
 		jxTree.getEmptyText().clear();
 		root = new DefaultMutableTreeNode("");
+		jxTree.setModel(new DefaultTreeModel(root));
+		this.jxTree.setCellRenderer(new CommentTreeCellRender());
 		jxTree.addTreeSelectionListener(new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
@@ -158,6 +151,7 @@ public class CommentList extends JPanel implements Disposable {
 				}
 			}
 		});
+		scheduleComment(root);
 	}
 
 	private void replyUser(JsonObject commentInfo) {
@@ -191,176 +185,83 @@ public class CommentList extends JPanel implements Disposable {
 		if (this.commentAlarm != null && !this.commentAlarm.isDisposed()) {
 			this.commentAlarm.cancelAllRequests();
 			if (parentNode == null) {
-				this.commentAlarm.addRequest(() -> findComments(root), 100);
+				jxTree.setModel(new DefaultTreeModel(root));
+				this.commentAlarm.addRequest(() -> findComments(new DefaultMutableTreeNode("")), 100);
 			} else {
 				this.commentAlarm.addRequest(()-> findComments(parentNode), 100);
 			}
 		}
 	}
-	private void finishPreviousPreviewSearch() {
-		if (this.progressIndicatorBase != null && !this.progressIndicatorBase.isCanceled()) {
-			this.progressIndicatorBase.cancel();
-		}
-	}
 
 	private void findComments(DefaultMutableTreeNode parentNode) {
 		final ModalityState state = ModalityState.current();
-		this.finishPreviousPreviewSearch();
 		this.commentAlarm.cancelAllRequests();
-		ProgressIndicatorBase progressIndicatorWhenSearchStarted = new ProgressIndicatorBase() {
-			public void stop() {
-				super.stop();
-				loadingDecorator.stopLoading();
-			}
-		};
-		this.progressIndicatorBase = progressIndicatorWhenSearchStarted;
-		final AtomicInteger resultsCount = new AtomicInteger();
-		loadingDecorator.startLoading(true);
-		jxTree.setModel(new DefaultTreeModel(root));
-		this.jxTree.setCellRenderer(new CommentTreeCellRender());
-		ProgressIndicatorUtils.scheduleWithWriteActionPriority(this.progressIndicatorBase, new ReadTask() {
-			public ReadTask.Continuation performInReadAction(@NotNull ProgressIndicator indicator) {
-				if (this.isCancelled()) {
-					loadingDecorator.stopLoading();
-				} else {
-					ApplicationManager.getApplication().invokeLater(() -> {
-						if (this.isCancelled()) {
-							loadingDecorator.stopLoading();
-						} else {
-							PinsService instance = PinsService.getInstance(project);
-							instance.getComments(cursor, pageSize, pinID, result -> {
-								if (result.isSuccess()) {
-									SwingUtilities.invokeLater((Runnable) () -> {
-										JsonObject commentResult = (JsonObject) result.getResult();
-										cursor = commentResult.get("cursor").getAsString();
-										JsonArray comments = commentResult.getAsJsonArray("data");
-										DefaultTreeModel treeMode = (DefaultTreeModel) jxTree.getModel();
-										for (int i = 0; i < comments.size(); i++) {
-											JsonObject comment = comments.get(i).getAsJsonObject();
-											DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(1, comment));
-											parentNode.add(commentNode);
-											JsonArray reply_infos = comment.getAsJsonArray("reply_infos");
-											if (reply_infos != null) {
-												int replyCout = comment.get("comment_info").getAsJsonObject().get("reply_count").getAsInt();
-												for (JsonElement reply_info : reply_infos) {
-													commentNode.add(new DefaultMutableTreeNode(new CommentNode(2, reply_info.getAsJsonObject())));
-												}
-												if (replyCout > reply_infos.size()) {
-													commentNode.add(new DefaultMutableTreeNode(new NeedMore()));
-												}
-											}
-											parentNode.add(commentNode);
-										}
-										if (commentResult.get("has_more").getAsBoolean()) {
-											parentNode.add(new DefaultMutableTreeNode(new NeedMore()));
-										}
-										treeMode.reload(parentNode);
-										loadingDecorator.stopLoading();
-									});
+		ApplicationManager.getApplication().invokeLater(() -> {
+			jxTree.setPaintBusy(true);
+			PinsService instance = PinsService.getInstance(project);
+			instance.getComments(cursor, pageSize, pinID, result -> {
+				if (result.isSuccess()) {
+					SwingUtilities.invokeLater(() -> {
+						JsonObject commentResult = (JsonObject) result.getResult();
+						cursor = commentResult.get("cursor").getAsString();
+						JsonArray comments = commentResult.getAsJsonArray("data");
+						DefaultTreeModel treeMode = (DefaultTreeModel) jxTree.getModel();
+						for (int i = 0; i < comments.size(); i++) {
+							JsonObject comment = comments.get(i).getAsJsonObject();
+							DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(1, comment));
+							JsonArray reply_infos = comment.getAsJsonArray("reply_infos");
+							if (reply_infos != null) {
+								int replyCout = comment.get("comment_info").getAsJsonObject().get("reply_count").getAsInt();
+								for (JsonElement reply_info : reply_infos) {
+									commentNode.add(new DefaultMutableTreeNode(new CommentNode(2, reply_info.getAsJsonObject())));
 								}
-							});
+								if (replyCout > reply_infos.size()) {
+									commentNode.add(new DefaultMutableTreeNode(new NeedMore()));
+								}
+							}
+							parentNode.add(commentNode);
 						}
-					}, state);
-					boolean continueSearch = resultsCount.incrementAndGet() < ShowUsagesAction.getUsagesPageSize();
-					if (!continueSearch) {
-						loadingDecorator.stopLoading();
-					}
+						if (commentResult.get("has_more").getAsBoolean()) {
+							parentNode.add(new DefaultMutableTreeNode(new NeedMore()));
+						}
+						treeMode.reload(parentNode);
+						jxTree.setPaintBusy(false);
+					});
+				} else {
+					jxTree.getEmptyText().setText("数据获取失败");
 				}
-				return new Continuation(() -> {
-					if (!this.isCancelled() && resultsCount.get() == 0) {
-						StatusText emptyText = jxTree.getEmptyText();
-						emptyText.clear();
-					}
-					loadingDecorator.stopLoading();
-				}, state);
-			}
-
-			boolean isCancelled() {
-				return progressIndicatorWhenSearchStarted != CommentList.this.progressIndicatorBase || progressIndicatorWhenSearchStarted.isCanceled();
-			}
-
-			public void onCanceled(@NotNull ProgressIndicator indicator) {
-				if (CommentList.this.isShowing() && progressIndicatorWhenSearchStarted == CommentList.this.progressIndicatorBase) {
-					CommentList.this.scheduleComment(parentNode);
-				}
-			}
-		});
+			});
+		}, state);
 	}
 
 	private void getCommentReply(String commentID, String replyCursor, DefaultMutableTreeNode parentNode) {
 		final ModalityState state = ModalityState.current();
-		if (this.progressIndicatorBase != null && !this.progressIndicatorBase.isCanceled()) {
-			this.progressIndicatorBase.cancel();
-		}
 		this.commentAlarm.cancelAllRequests();
-		ProgressIndicatorBase progressIndicatorWhenSearchStarted = new ProgressIndicatorBase() {
-			public void stop() {
-				super.stop();
-				loadingDecorator.stopLoading();
-			}
-		};
-		this.progressIndicatorBase = progressIndicatorWhenSearchStarted;
-		final AtomicInteger resultsCount = new AtomicInteger();
-		loadingDecorator.startLoading(true);
-		ProgressIndicatorUtils.scheduleWithWriteActionPriority(this.progressIndicatorBase, new ReadTask() {
-			public ReadTask.Continuation performInReadAction(@NotNull ProgressIndicator indicator) {
-				if (this.isCancelled()) {
-					loadingDecorator.stopLoading();
-				} else {
-					ApplicationManager.getApplication().invokeLater(() -> {
-						if (this.isCancelled()) {
-							loadingDecorator.stopLoading();
-						} else {
-							PinsService instance = PinsService.getInstance(project);
-							instance.getCommentReply(replyCursor, pageSize, commentID, pinID, result -> {
-								if (result.isSuccess()) {
-									SwingUtilities.invokeLater(() -> {
-										JsonObject commentResult = (JsonObject) result.getResult();
-										String newReplyCursor = commentResult.get("cursor").getAsString();
-										commentReplyCursorMap.put(commentID, newReplyCursor);
-										JsonArray commentReply = commentResult.getAsJsonArray("data");
-										DefaultTreeModel treeMode = (DefaultTreeModel) jxTree.getModel();
-										for (int i = 0; i < commentReply.size(); i++) {
-											JsonObject reply = commentReply.get(i).getAsJsonObject();
-											DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(2, reply));
-											parentNode.add(commentNode);
-										}
-										if (commentResult.get("has_more").getAsBoolean()) {
-											parentNode.add(new DefaultMutableTreeNode(new NeedMore()));
-										}
-										treeMode.nodeStructureChanged(parentNode);
-										jxTree.updateUI();
-										jxTree.expandRow(0);
-										loadingDecorator.stopLoading();
-									});
-								}
-							});
+		ApplicationManager.getApplication().invokeLater(() -> {
+			jxTree.setPaintBusy(true);
+			PinsService instance = PinsService.getInstance(project);
+			instance.getCommentReply(replyCursor, pageSize, commentID, pinID, result -> {
+				if (result.isSuccess()) {
+					SwingUtilities.invokeLater(() -> {
+						JsonObject commentResult = (JsonObject) result.getResult();
+						String newReplyCursor = commentResult.get("cursor").getAsString();
+						commentReplyCursorMap.put(commentID, newReplyCursor);
+						JsonArray commentReply = commentResult.getAsJsonArray("data");
+						DefaultTreeModel treeMode = (DefaultTreeModel) jxTree.getModel();
+						for (int i = 0; i < commentReply.size(); i++) {
+							JsonObject reply = commentReply.get(i).getAsJsonObject();
+							DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(2, reply));
+							parentNode.add(commentNode);
 						}
-					}, state);
-					boolean continueSearch = resultsCount.incrementAndGet() < ShowUsagesAction.getUsagesPageSize();
-					if (!continueSearch) {
-						loadingDecorator.stopLoading();
-					}
+						if (commentResult.get("has_more").getAsBoolean()) {
+							parentNode.add(new DefaultMutableTreeNode(new NeedMore()));
+						}
+						treeMode.nodeStructureChanged(parentNode);
+						jxTree.setPaintBusy(false);
+					});
 				}
-				return new Continuation(() -> {
-					if (!this.isCancelled() && resultsCount.get() == 0) {
-						StatusText emptyText = jxTree.getEmptyText();
-						emptyText.clear();
-					}
-					loadingDecorator.stopLoading();
-				}, state);
-			}
-
-			boolean isCancelled() {
-				return progressIndicatorWhenSearchStarted != CommentList.this.progressIndicatorBase || progressIndicatorWhenSearchStarted.isCanceled();
-			}
-
-			public void onCanceled(@NotNull ProgressIndicator indicator) {
-				if (CommentList.this.isShowing() && progressIndicatorWhenSearchStarted == CommentList.this.progressIndicatorBase) {
-					CommentList.this.getCommentReply(commentID, replyCursor, parentNode);
-				}
-			}
-		});
+			});
+		}, state);
 	}
 
 	@Override

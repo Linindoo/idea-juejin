@@ -246,9 +246,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 					w.setLocationRelativeTo(parent);
 				}
 				this.myDialog.show();
-				ApplicationManager.getApplication().invokeLater(()->{
-					commentList.scheduleComment(null);
-				});
 				w.addWindowListener(new WindowAdapter() {
 					public void windowOpened(WindowEvent e) {
 						w.addWindowFocusListener(new WindowAdapter() {
