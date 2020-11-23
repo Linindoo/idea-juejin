@@ -9,7 +9,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.browsers.WebBrowserManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.ImageUtil;
@@ -22,6 +24,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class PinContentInfoPanel extends JPanel {
@@ -40,12 +43,9 @@ public class PinContentInfoPanel extends JPanel {
 	private JLabel topic;
 	private JsonObject pinItem;
 	private Project project;
-	private boolean showCommentDialog;
 	private String contentStr;
-	private ImageClickEvent imageClickEvent;
 
-	public PinContentInfoPanel(JsonObject pinItem, Project project, boolean showCommentDialog) {
-		this.showCommentDialog = showCommentDialog;
+	public PinContentInfoPanel(JsonObject pinItem, Project project) {
 		this.pinItem = pinItem;
 		this.project = project;
 		this.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 0, 10), -1, -1));
@@ -57,21 +57,22 @@ public class PinContentInfoPanel extends JPanel {
 		}
 	}
 
-	public PinContentInfoPanel(JsonObject pinItem, Project project, ImageClickEvent imageClickEvent) {
-		this(pinItem, project,false);
-		this.imageClickEvent = imageClickEvent;
-	}
-
 	private void initData() throws IOException {
 		JsonObject actor  = this.pinItem.get("author_user_info").getAsJsonObject();
 		String avatarUrl = actor.get("avatar_large").getAsString();
 		if (StringUtils.isNotEmpty(avatarUrl)) {
-			URL avatarLarge = new URL(avatarUrl);
-			ImageIcon icon = new ImageIcon(avatarLarge);
-			Image image = ImageUtils.scaleImage(icon.getImage(), 40, 40);
-			BufferedImage result = ImageUtils.makeRoundedCorner(ImageUtil.toBufferedImage(image), 40);
-			icon.setImage(result);
-			this.avatar.setIcon(icon);
+			ApplicationManager.getApplication().invokeLater(() -> {
+				try {
+					URL avatarLarge = new URL(avatarUrl);
+					ImageIcon icon = new ImageIcon(avatarLarge);
+					Image image = ImageUtils.scaleImage(icon.getImage(), 40, 40);
+					BufferedImage result = ImageUtils.makeRoundedCorner(ImageUtil.toBufferedImage(image), 40);
+					icon.setImage(result);
+					avatar.setIcon(icon);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				}
+			});
 		}
 		this.nickname.setText(actor.get("user_name").getAsString());
 		this.job.setText(actor.get("job_title").getAsString());
@@ -94,50 +95,20 @@ public class PinContentInfoPanel extends JPanel {
 		});
 
 		JsonArray pictures = target.getAsJsonArray("pic_list");
-		if (pictures != null) {
+		if (pictures != null && pictures.size() > 0) {
 			JTextArea log = new JTextArea(4, 4);
 			new ImageLoadingWorker(project, log, imageContent, pictures).execute();
 			imageContent.setVisible(true);
-//
-//			int row = pictures.size() % 3 == 0 ? pictures.size() / 3 : pictures.size() / 3 + 1;
-//			this.imageContent.setLayout(new GridLayoutManager(row+1, 3, new Insets(10, 10, 0, 10), -1, 10));
-//			for (int i = 0; i < pictures.size(); i++) {
-//				String imageUrl = pictures.get(i).getAsString();
-//				String thumbnailUrl = ImageUtils.getThumbnailUrl(imageUrl);
-//				ImageIcon picCon = new ImageIcon(new URL(thumbnailUrl));
-//				picCon.setImage(ImageUtils.scaleImage(picCon.getImage(), 115, 79));
-//				JLabel jLabel = new JLabel();
-//				jLabel.setPreferredSize(new Dimension(115,79));
-//				jLabel.setIcon(picCon);
-//				int finalI = i;
-//				jLabel.addMouseListener(new MouseAdapter() {
-//					@Override
-//					public void mouseClicked(MouseEvent e) {
-//						if (imageClickEvent != null) {
-//							imageClickEvent.viewImage(pictures, finalI);
-//						}
-//					}
-//				});
-//				int grow = i / 3;
-//				int gc = i % 3;
-//				this.imageContent.add(jLabel, new GridConstraints(grow , gc, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-//			}
-//			JLabel label = new JLabel();
-//			label.setPreferredSize(new Dimension(115,79));
-//			if (pictures.size() == 1) {
-//				this.imageContent.add(label, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-//				this.imageContent.add(label, new GridConstraints(0  , 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-//			} else if (pictures.size() == 2) {
-//				this.imageContent.add(label, new GridConstraints(0  , 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-//			}
+		} else {
+			imageContent.setVisible(false);
 		}
-//		JsonElement jsonElement = target.get("topic");
-//		if (jsonElement != null && !jsonElement.isJsonNull()) {
-//			this.topic.setVisible(true);
-//			this.topic.setText(jsonElement.getAsJsonObject().get("title").getAsString());
-//		} else {
-//			this.topic.setVisible(false);
-//		}
+		JsonElement jsonElement = target.get("topic");
+		if (jsonElement != null && !jsonElement.isJsonNull()) {
+			this.topic.setVisible(true);
+			this.topic.setText(jsonElement.getAsJsonObject().get("title").getAsString());
+		} else {
+			this.topic.setVisible(false);
+		}
 	}
 
 	private void initExpandContent() {

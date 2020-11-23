@@ -94,7 +94,7 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 				imagePreViewDialog.show();
 			}
 		};
-		PinContentInfoPanel pinContentInfoPanel = new PinContentInfoPanel(this.pinInfo, project, imageClickEvent);
+		PinContentInfoPanel pinContentInfoPanel = new PinContentInfoPanel(this.pinInfo, project);
 		this.add(pinContentInfoPanel, "pushx, growx, sx 10, gaptop 4, wrap");
 		this.add(new JSeparator(), "pushx, growx, sx 10, gaptop 4, wrap");
 		commentList = new CommentList(project, pinInfo.get("msg_id").getAsString());

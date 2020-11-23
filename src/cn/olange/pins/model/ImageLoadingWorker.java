@@ -36,7 +36,7 @@ public class ImageLoadingWorker extends SwingWorker<List<ImageIcon>, String> {
         int row = pictures.size() % 3 == 0 ? pictures.size() / 3 : pictures.size() / 3 + 1;
         this.viewer.setLayout(new GridLayoutManager(row+1, 3, new Insets(10, 10, 0, 10), -1, 10));
         for (int i = 0; i < pictures.size(); i++) {
-            Icon icon = IconLoader.getIcon("/icons/image.png");
+            Icon icon = IconLoader.getIcon("/icons/image_loading.png");
             JLabel jl = new JLabel(icon);
             jl.setPreferredSize(new Dimension(115,79));
             int grow = i / 3;
@@ -77,6 +77,14 @@ public class ImageLoadingWorker extends SwingWorker<List<ImageIcon>, String> {
                     }
 
                 });
+            }
+            JLabel label = new JLabel();
+            label.setPreferredSize(new Dimension(115,79));
+            if (pictures.size() == 1) {
+                this.viewer.add(label, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+                this.viewer.add(label, new GridConstraints(0  , 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+            } else if (pictures.size() == 2) {
+                this.viewer.add(label, new GridConstraints(0  , 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
             }
             viewer.updateUI();
         } catch (Exception e) {
