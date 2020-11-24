@@ -11,6 +11,7 @@ import com.google.gson.JsonParser;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 
@@ -20,14 +21,14 @@ public class PinsService {
 		return ServiceManager.getService(project, PinsService.class);
 	}
 
-	public void getPageInfo(String topic, String endCursor, int pageSize, Handler<AsyncResult> handler) {
+	public void getPageInfo(String topic, String endCursor, int pageSize, String cookieValue, Handler<AsyncResult> handler) {
 		JsonObject query = new JsonObject();
 		query.addProperty("id_type", 4);
 		query.addProperty("limit", pageSize);
 		query.addProperty("sort_type", "hot".equals(topic) ? 200 : 300);
 		query.addProperty("cursor", endCursor);
 		try {
-			String result = HttpUtil.postJson("https://apinew.juejin.im/recommend_api/v1/short_msg/" + topic, query.toString());
+			String result = HttpUtil.postJson("https://apinew.juejin.im/recommend_api/v1/short_msg/" + topic, query.toString(), cookieValue);
 			JsonObject jObject = JsonParser.parseString(result).getAsJsonObject();
 			handler.handle(new AsyncResult(true, jObject));
 		} catch (IOException e) {
@@ -90,7 +91,9 @@ public class PinsService {
 		params.addProperty("item_type", 4);
 		try {
 			String resp = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/comment/publish", params.toString(), cookieValue);
-			System.out.println(resp);
+			if (StringUtils.isNotEmpty(resp)) {
+				return JsonParser.parseString(resp).getAsJsonObject();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -110,6 +113,9 @@ public class PinsService {
 		try {
 			String resp = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/reply/publish", params.toString(), cookieValue);
 			System.out.println(resp);
+			if (StringUtils.isNotEmpty(resp)) {
+				return JsonParser.parseString(resp).getAsJsonObject();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -117,4 +123,21 @@ public class PinsService {
 	}
 
 
+	public boolean praise(String pinID, String cookieValue) {
+		JsonObject params = new JsonObject();
+		try {
+			params.addProperty("item_id", pinID);
+			params.addProperty("item_type", 4);
+			String ret = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/digg/save", params.toString(), cookieValue);
+			if (StringUtils.isNotEmpty(ret)) {
+				JsonObject result = JsonParser.parseString(ret).getAsJsonObject();
+				if (result.get("err_no").getAsInt() == 0) {
+					return true;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 }

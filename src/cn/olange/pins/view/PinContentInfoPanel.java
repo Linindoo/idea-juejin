@@ -1,7 +1,9 @@
 package cn.olange.pins.view;
 
-import cn.olange.pins.event.ImageClickEvent;
+import cn.olange.pins.model.Config;
 import cn.olange.pins.model.ImageLoadingWorker;
+import cn.olange.pins.service.PinsService;
+import cn.olange.pins.setting.JuejinPersistentConfig;
 import cn.olange.pins.utils.DateUtils;
 import cn.olange.pins.utils.ImageUtils;
 import com.google.gson.JsonArray;
@@ -18,7 +20,6 @@ import com.intellij.util.ui.ImageUtil;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -50,14 +51,10 @@ public class PinContentInfoPanel extends JPanel {
 		this.project = project;
 		this.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 0, 10), -1, -1));
 		this.add(pinInfo, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-		try {
-			this.initData();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		this.initData();
 	}
 
-	private void initData() throws IOException {
+	private void initData() {
 		JsonObject actor  = this.pinItem.get("author_user_info").getAsJsonObject();
 		String avatarUrl = actor.get("avatar_large").getAsString();
 		if (StringUtils.isNotEmpty(avatarUrl)) {
@@ -74,6 +71,7 @@ public class PinContentInfoPanel extends JPanel {
 				}
 			});
 		}
+		Config config = JuejinPersistentConfig.getInstance().getState();
 		this.nickname.setText(actor.get("user_name").getAsString());
 		this.job.setText(actor.get("job_title").getAsString());
 		this.company.setText(actor.get("company").getAsString());
@@ -83,6 +81,33 @@ public class PinContentInfoPanel extends JPanel {
 		this.contentStr = target.get("content").getAsString();
 		this.initExpandContent();
 		this.prise.setText(target.get("digg_count").getAsString());
+		JsonObject user_interact = this.pinItem.get("user_interact").getAsJsonObject();
+		if (user_interact.get("is_digg").getAsBoolean()) {
+			this.prise.setIcon(IconLoader.getIcon("/icons/prised.png"));
+		}
+		this.prise.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (!config.isLogined()) {
+					return;
+				}
+				ApplicationManager.getApplication().invokeLater(()->{
+					boolean ret = PinsService.getInstance(project).praise(pinItem.get("msg_id").getAsString(), config.getCookieValue());
+					if (ret) {
+						SwingUtilities.invokeLater(()->{
+							if (user_interact.get("is_digg").getAsBoolean()) {
+								user_interact.addProperty("is_digg", false);
+								prise.setIcon(IconLoader.getIcon("/icons/prise.png"));
+							} else {
+								user_interact.addProperty("is_digg", true);
+								prise.setIcon(IconLoader.getIcon("/icons/prised.png"));
+							}
+						});
+					}
+				});
+
+			}
+		});
 		int commentCount = target.get("comment_count").getAsInt();
 		this.comment.setText(String.valueOf(commentCount));
 		String createdAt = target.get("ctime").getAsString();

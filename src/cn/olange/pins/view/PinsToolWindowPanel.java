@@ -172,14 +172,14 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		ApplicationManager.getApplication().invokeLater(() -> {
 			pinTable.setPaintBusy(true);
 			Config config = JuejinPersistentConfig.getInstance().getConfig();
-			instance.getPageInfo(config.getCurentCatalog(), endCursor, pageSize, result -> {
+			instance.getPageInfo(config.getCurentCatalog(), endCursor, pageSize, config.isLogined() ? config.getCookieValue() : "", result -> {
 				if (result.isSuccess()) {
-					SwingUtilities.invokeLater((Runnable) () -> {
+					SwingUtilities.invokeLater(() -> {
 						JsonObject resultObj = (JsonObject) result.getResult();
 						boolean hasNextPage = resultObj.get("has_more").getAsBoolean();
 						if ("0".equals(endCursor)) {
 							datas = resultObj.getAsJsonArray("data");
-						}else {
+						} else {
 							datas.addAll(resultObj.getAsJsonArray("data"));
 						}
 						endCursor = resultObj.get("cursor").getAsString();

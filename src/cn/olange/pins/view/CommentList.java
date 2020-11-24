@@ -6,37 +6,29 @@ import cn.olange.pins.setting.JuejinPersistentConfig;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.find.actions.ShowUsagesAction;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.util.ProgressIndicatorBase;
-import com.intellij.openapi.progress.util.ProgressIndicatorUtils;
-import com.intellij.openapi.progress.util.ReadTask;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.LoadingDecorator;
+import com.intellij.ui.DoubleClickListener;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.Alarm;
 import com.intellij.util.ui.JBUI;
-import com.intellij.util.ui.StatusText;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CommentList extends JPanel implements Disposable {
 	private final Project project;
@@ -49,9 +41,8 @@ public class CommentList extends JPanel implements Disposable {
 	private SimpleTree jxTree;
 	private DefaultMutableTreeNode root;
 	private Map<String, String> commentReplyCursorMap = new HashMap<>();
-	private JsonObject replyCommentInfo;
-	private JLabel replyUserLabel;
-	private JPanel replyPanel;
+	private JButton replyPanel;
+	private DefaultMutableTreeNode selectNode;
 
 	public CommentList(Project project, String pinID) {
 		super();
@@ -65,19 +56,18 @@ public class CommentList extends JPanel implements Disposable {
 		this.setLayout(new BorderLayout());
 		JTextField textField = new JTextField();
 		JPanel bottomPanel = new JPanel(new BorderLayout());
-		replyPanel = new JPanel();
+		replyPanel = new JButton();
 		replyPanel.setLayout(new BorderLayout());
-		replyUserLabel = new JLabel();
-		replyPanel.add(replyUserLabel, BorderLayout.WEST);
 		replyPanel.add(new ReplyUserActionButton(new ReplyUserActionButton.ClearAction() {
 			@Override
 			public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
 				replyPanel.setVisible(false);
-				replyCommentInfo = null;
+				selectNode = null;
 			}
-		}), BorderLayout.CENTER);
+		}), BorderLayout.EAST);
 		bottomPanel.add(replyPanel, BorderLayout.WEST);
 		replyPanel.setVisible(false);
+
 		bottomPanel.add(textField, BorderLayout.CENTER);
 		JButton commentBtn = new JButton("评论");
 		Config config = JuejinPersistentConfig.getInstance().getState();
@@ -86,26 +76,45 @@ public class CommentList extends JPanel implements Disposable {
 			public void actionPerformed(ActionEvent e) {
 				String text = textField.getText();
 				if (StringUtils.isNotEmpty(text) && config.isLogined()) {
+					commentBtn.setEnabled(false);
 					ApplicationManager.getApplication().invokeLater(() -> {
 						PinsService pinsService = PinsService.getInstance(project);
-						if (replyCommentInfo == null || replyCommentInfo.isJsonNull()) {
-							pinsService.comment(pinID, text, config.getCookieValue());
+						if (selectNode == null || selectNode.getUserObject() == null) {
+							JsonObject commentObj = pinsService.comment(pinID, text, config.getCookieValue());
+							if (commentObj != null && commentObj.get("data") != null) {
+								SwingUtilities.invokeLater(()->{
+									root.add(new DefaultMutableTreeNode(new CommentNode(1, commentObj.get("data").getAsJsonObject())));
+									((DefaultTreeModel)jxTree.getModel()).reload(root);
+								});
+							}
 						} else {
-							JsonElement reply_info = replyCommentInfo.get("reply_info");
+							JsonObject nodeItem = ((CommentNode) selectNode.getUserObject()).getItem();
+							JsonElement reply_info = nodeItem.get("reply_info");
 							String commentID, replyID = "", replyUserID = "";
 							if (reply_info == null || reply_info.isJsonNull()) {
-								commentID = replyCommentInfo.get("comment_id").getAsString();
+								commentID = nodeItem.get("comment_id").getAsString();
 							} else {
 								commentID = reply_info.getAsJsonObject().get("reply_comment_id").getAsString();
 								replyID = reply_info.getAsJsonObject().get("reply_id").getAsString();
 								replyUserID = reply_info.getAsJsonObject().get("reply_user_iD").getAsString();
 							}
-							pinsService.replyComment(pinID, commentID, replyID, replyUserID, text, config.getCookieValue());
+							JsonObject replyObj = pinsService.replyComment(pinID, commentID, replyID, replyUserID, text, config.getCookieValue());
+							if (replyObj != null && replyObj.get("data") != null) {
+								SwingUtilities.invokeLater(() -> {
+									JsonObject reply = replyObj.get("data").getAsJsonObject();
+									DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(2, reply));
+									((DefaultMutableTreeNode) selectNode.getParent()).add(commentNode);
+									DefaultTreeModel treeMode = (DefaultTreeModel) jxTree.getModel();
+									treeMode.nodeStructureChanged(selectNode.getParent());
+								});
+							}
 						}
-						replyCommentInfo = null;
-						replyPanel.setVisible(false);
-						cursor = "0";
-						scheduleComment(null);
+						SwingUtilities.invokeLater(()->{
+							replyPanel.setVisible(false);
+							cursor = "0";
+							textField.setText("");
+							commentBtn.setEnabled(true);
+						});
 					});
 				}
 			}
@@ -127,37 +136,37 @@ public class CommentList extends JPanel implements Disposable {
 		root = new DefaultMutableTreeNode("");
 		jxTree.setModel(new DefaultTreeModel(root));
 		this.jxTree.setCellRenderer(new CommentTreeCellRender());
-		jxTree.addTreeSelectionListener(new TreeSelectionListener() {
-			@Override
-			public void valueChanged(TreeSelectionEvent e) {
-				TreePath selectionPath = jxTree.getSelectionPath();
-				if (selectionPath == null) {
-					return;
-				}
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectionPath.getLastPathComponent();
-				if (node.getUserObject() instanceof NeedMore) {
-					TreePath parentPath = selectionPath.getParentPath();
-					DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-					parentNode.remove(node);
-					if (parentNode.getUserObject() instanceof CommentNode) {
-						CommentNode treeNode = (CommentNode) parentNode.getUserObject();
-						getCommentReply(treeNode, parentNode);
-					} else {
-						loadMoreComment(parentNode);
+		(new DoubleClickListener() {
+			protected boolean onDoubleClick(MouseEvent event) {
+				if (event.getSource() != CommentList.this.jxTree) {
+					return false;
+				} else {
+					TreePath selectionPath = jxTree.getSelectionPath();
+					if (selectionPath == null) {
+						return false;
 					}
-				} else if (node.getUserObject() instanceof CommentNode) {
-					CommentNode commentTreeNode = (CommentNode) node.getUserObject();
-					replyUser(commentTreeNode.getItem());
+					DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectionPath.getLastPathComponent();
+					if (node.getUserObject() instanceof NeedMore) {
+						TreePath parentPath = selectionPath.getParentPath();
+						DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+						parentNode.remove(node);
+						if (parentNode.getUserObject() instanceof CommentNode) {
+							CommentNode treeNode = (CommentNode) parentNode.getUserObject();
+							getCommentReply(treeNode, parentNode);
+						} else {
+							loadMoreComment(parentNode);
+						}
+					} else if (node.getUserObject() instanceof CommentNode) {
+						selectNode = node;
+						JsonObject item = ((CommentNode) node.getUserObject()).getItem();
+						replyPanel.setText("回复 " + item.get("user_info").getAsJsonObject().get("user_name").getAsString());
+						replyPanel.setVisible(true);
+					}
+					return true;
 				}
 			}
-		});
+		}).installOn(this.jxTree);
 		scheduleComment(root);
-	}
-
-	private void replyUser(JsonObject commentInfo) {
-		this.replyCommentInfo = commentInfo;
-		this.replyUserLabel.setText("回复 " + replyCommentInfo.get("user_info").getAsJsonObject().get("user_name").getAsString());
-		this.replyPanel.setVisible(true);
 	}
 
 	private void loadMoreComment(DefaultMutableTreeNode parentNode) {
@@ -185,10 +194,11 @@ public class CommentList extends JPanel implements Disposable {
 		if (this.commentAlarm != null && !this.commentAlarm.isDisposed()) {
 			this.commentAlarm.cancelAllRequests();
 			if (parentNode == null) {
+				root = new DefaultMutableTreeNode("");
 				jxTree.setModel(new DefaultTreeModel(root));
-				this.commentAlarm.addRequest(() -> findComments(new DefaultMutableTreeNode("")), 100);
+				this.commentAlarm.addRequest(() -> findComments(root), 300);
 			} else {
-				this.commentAlarm.addRequest(()-> findComments(parentNode), 100);
+				this.commentAlarm.addRequest(()-> findComments(parentNode), 300);
 			}
 		}
 	}
@@ -211,6 +221,8 @@ public class CommentList extends JPanel implements Disposable {
 							DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(1, comment));
 							JsonArray reply_infos = comment.getAsJsonArray("reply_infos");
 							if (reply_infos != null) {
+								String comment_id = comment.get("comment_id").getAsString();
+								commentReplyCursorMap.put(comment_id, reply_infos.size() + "");
 								int replyCout = comment.get("comment_info").getAsJsonObject().get("reply_count").getAsInt();
 								for (JsonElement reply_info : reply_infos) {
 									commentNode.add(new DefaultMutableTreeNode(new CommentNode(2, reply_info.getAsJsonObject())));
