@@ -5,7 +5,6 @@ import cn.olange.pins.action.RefreshPinsAction;
 import cn.olange.pins.action.UserActionGroup;
 import cn.olange.pins.model.Config;
 import cn.olange.pins.model.NeedMore;
-import cn.olange.pins.model.PageOperation;
 import cn.olange.pins.model.TableCellRender;
 import cn.olange.pins.service.PinsService;
 import cn.olange.pins.setting.JuejinPersistentConfig;
@@ -43,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Disposable, PageOperation, DataProvider {
+public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Disposable, DataProvider {
 	public JPanel pins;
 	private JPanel toolbar;
 	private JPanel contentPanel;
@@ -65,7 +64,7 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		this.project = project;
 		this.topic = topic;
 		DefaultActionGroup actionGroup = new DefaultActionGroup("PinsGroup", false);
-		actionGroup.add(new RefreshPinsAction(this));
+		actionGroup.add(new RefreshPinsAction());
 		actionGroup.addSeparator();
 		actionGroup.add(new UserActionGroup());
 		actionGroup.add(new ConfigAction());
@@ -203,22 +202,6 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 			});
 		}, state);
 	}
-
-	@Override
-	public void nextPage() {
-		scheduleResultsUpdate();
-		this.pageIndex += 1;
-	}
-
-	@Override
-	public void previewPage() {
-		if (pageIndex - 1 > 0) {
-			this.endCursor = pageMap.get(pageIndex - 1);
-		}
-		scheduleResultsUpdate();
-	}
-
-	@Override
 	public void refrshPage() {
 		this.endCursor = "0";
 		scheduleResultsUpdate();

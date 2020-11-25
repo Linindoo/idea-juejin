@@ -11,6 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.browsers.WebBrowserManager;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
@@ -24,11 +25,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class PinContentInfoPanel extends JPanel {
+public class PinContentInfoPanel extends JPanel implements Disposable {
 	private JTextPane content;
 	private JLabel avatar;
 	private JLabel job;
@@ -45,6 +45,7 @@ public class PinContentInfoPanel extends JPanel {
 	private JsonObject pinItem;
 	private Project project;
 	private String contentStr;
+	private ImageLoadingWorker imageLoadingWorker;
 
 	public PinContentInfoPanel(JsonObject pinItem, Project project) {
 		this.pinItem = pinItem;
@@ -98,9 +99,11 @@ public class PinContentInfoPanel extends JPanel {
 							if (user_interact.get("is_digg").getAsBoolean()) {
 								user_interact.addProperty("is_digg", false);
 								prise.setIcon(IconLoader.getIcon("/icons/prise.png"));
+								prise.setText(String.valueOf(pinItem.getAsJsonObject("msg_Info").get("digg_count").getAsInt() - 1));
 							} else {
 								user_interact.addProperty("is_digg", true);
 								prise.setIcon(IconLoader.getIcon("/icons/prised.png"));
+								prise.setText(String.valueOf(pinItem.getAsJsonObject("msg_Info").get("digg_count").getAsInt() + 1));
 							}
 						});
 					}
@@ -122,7 +125,8 @@ public class PinContentInfoPanel extends JPanel {
 		JsonArray pictures = target.getAsJsonArray("pic_list");
 		if (pictures != null && pictures.size() > 0) {
 			JTextArea log = new JTextArea(4, 4);
-			new ImageLoadingWorker(project, log, imageContent, pictures).execute();
+			imageLoadingWorker = new ImageLoadingWorker(project, log, imageContent, pictures);
+			imageLoadingWorker.execute();
 			imageContent.setVisible(true);
 		} else {
 			imageContent.setVisible(false);
@@ -163,6 +167,13 @@ public class PinContentInfoPanel extends JPanel {
 		} else {
 			this.expand.setText("展开");
 			this.content.setText(this.contentStr.substring(0, 100));
+		}
+	}
+
+	@Override
+	public void dispose() {
+		if (imageLoadingWorker != null) {
+			imageLoadingWorker.cancel(true);
 		}
 	}
 }

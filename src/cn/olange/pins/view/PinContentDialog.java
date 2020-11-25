@@ -1,7 +1,5 @@
 package cn.olange.pins.view;
 
-import cn.olange.pins.event.ImageClickEvent;
-import cn.olange.pins.model.ReplyUserActionButton;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.ide.IdeEventQueue;
@@ -82,18 +80,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		this.myTitlePanel.add(this.myLoadingDecorator.getComponent(), "w 24, wmin 24");
 		this.myTitlePanel.add(Box.createHorizontalGlue(), "growx, pushx");
 		this.add(this.myTitlePanel, "wrap");
-		ImageClickEvent imageClickEvent = new ImageClickEvent() {
-			@Override
-			public void viewImage(JsonArray pictures, int index) {
-				ImagePreViewDialog imagePreViewDialog = new ImagePreViewDialog(project, pictures, index);
-				showImageDialog = true;
-				Disposer.register(imagePreViewDialog.getDisposable(),()->{
-					showImageDialog = false;
-					PinContentDialog.this.myDialog.getContentPanel().requestFocus(true);
-				});
-				imagePreViewDialog.show();
-			}
-		};
 		PinContentInfoPanel pinContentInfoPanel = new PinContentInfoPanel(this.pinInfo, project);
 		this.add(pinContentInfoPanel, "pushx, growx, sx 10, gaptop 4, wrap");
 		this.add(new JSeparator(), "pushx, growx, sx 10, gaptop 4, wrap");
@@ -191,7 +177,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 				Dimension prev = DimensionService.getInstance().getSize(SERVICE_KEY);
 
 				panelSize.width += JBUI.scale(24);
-				panelSize.height *= 2;
 				if (prev != null && prev.height < panelSize.height) {
 					prev.height = panelSize.height;
 				}
@@ -234,8 +219,8 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 				w.setBackground(UIUtil.getPanelBackground());
 				w.setMinimumSize(panelSize);
 				if (prev == null) {
-					panelSize.height = (int) ((double) panelSize.height * 1.5D);
-					panelSize.width = (int) ((double) panelSize.width * 1.15D);
+					panelSize.height = (int) ((double) panelSize.height * 0.75D);
+					panelSize.width = (int) ((double) panelSize.width * 0.75D);
 				}
 
 				w.setSize(prev != null ? prev : panelSize);
