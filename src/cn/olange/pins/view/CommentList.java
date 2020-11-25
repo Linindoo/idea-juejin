@@ -79,12 +79,13 @@ public class CommentList extends JPanel implements Disposable {
 					commentBtn.setEnabled(false);
 					ApplicationManager.getApplication().invokeLater(() -> {
 						PinsService pinsService = PinsService.getInstance(project);
+						DefaultTreeModel model = (DefaultTreeModel) jxTree.getModel();
 						if (selectNode == null || selectNode.getUserObject() == null) {
 							JsonObject commentObj = pinsService.comment(pinID, text, config.getCookieValue());
 							if (commentObj != null && commentObj.get("data") != null) {
 								SwingUtilities.invokeLater(()->{
-									root.add(new DefaultMutableTreeNode(new CommentNode(1, commentObj.get("data").getAsJsonObject())));
-									((DefaultTreeModel)jxTree.getModel()).reload(root);
+									root.insert(new DefaultMutableTreeNode(new CommentNode(1, commentObj.get("data").getAsJsonObject())), 0);
+									model.reload(root);
 								});
 							}
 						} else {
@@ -104,8 +105,7 @@ public class CommentList extends JPanel implements Disposable {
 									JsonObject reply = replyObj.get("data").getAsJsonObject();
 									DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(2, reply));
 									((DefaultMutableTreeNode) selectNode.getParent()).add(commentNode);
-									DefaultTreeModel treeMode = (DefaultTreeModel) jxTree.getModel();
-									treeMode.nodeStructureChanged(selectNode.getParent());
+									model.nodeStructureChanged(selectNode.getParent());
 								});
 							}
 						}
@@ -126,7 +126,13 @@ public class CommentList extends JPanel implements Disposable {
 		bottomPanel.add(commentBtn, BorderLayout.EAST);
 		this.add(bottomPanel, BorderLayout.NORTH);
 		jxTree = new SimpleTree();
-		JBScrollPane scrollPane = new JBScrollPane(this.jxTree);
+		JBScrollPane scrollPane = new JBScrollPane(this.jxTree){
+			public Dimension getMinimumSize() {
+				Dimension size = super.getMinimumSize();
+				size.height = jxTree.getHeight();
+				return size;
+			}
+		};
 		scrollPane.setBorder(JBUI.Borders.empty());
 		this.add(scrollPane, BorderLayout.CENTER);
 		jxTree.setOpaque(false);
