@@ -64,12 +64,13 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		this.project = project;
 		this.topic = topic;
 		DefaultActionGroup actionGroup = new DefaultActionGroup("PinsGroup", false);
-		actionGroup.add(new RefreshPinsAction());
+		ActionManager actionManager = ActionManager.getInstance();
+		actionGroup.add(actionManager.getAction("juejin.RefreshAction"));
 		actionGroup.addSeparator();
 		actionGroup.add(new UserActionGroup());
-		actionGroup.add(new ConfigAction());
+		actionGroup.add(actionManager.getAction("juejin.Setting"));
+		actionGroup.add(actionManager.getAction("juejin.HelpAction"));
 		actionGroup.addSeparator();
-		ActionManager actionManager = ActionManager.getInstance();
 		ActionGroup catalogGroup = (ActionGroup) actionManager.getAction("Juejuin.Category");
 		actionGroup.add(catalogGroup);
 		ActionToolbar actionToolbar = actionManager.createActionToolbar("pinsToolBar", actionGroup, true);
@@ -103,12 +104,8 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 					Object myData = pinTable.getModel().getValueAt(selectedRow, 0);
 					if (myData instanceof JsonObject) {
 						JsonObject jsonObject = (JsonObject) myData;
-						long currentTimeMillis = System.currentTimeMillis();
-						System.out.println("start:" + currentTimeMillis);
 						pinDetailDialog = new PinContentDialog(project, jsonObject);
-						System.out.println("cost:" + (System.currentTimeMillis() - currentTimeMillis));
 						pinDetailDialog.showUI();
-						System.out.println("showUICost: " + (System.currentTimeMillis() - currentTimeMillis));
 					} else if (myData instanceof NeedMore) {
 						scheduleResultsUpdate();
 					}

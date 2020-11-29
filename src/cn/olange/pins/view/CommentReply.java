@@ -46,7 +46,7 @@ public class CommentReply extends JPanel{
 		String avatarLarge = userInfo.get("avatarLarge").getAsString();
 		if (!StringUtil.isNullOrEmpty(avatarLarge)) {
 			ImageIcon icon = new ImageIcon(new URL(avatarLarge));
-			Image image = ImageUtils.scaleImage(icon.getImage(), 40, 40);
+			Image image = ImageUtil.scaleImage(icon.getImage(), 40, 40);
 			BufferedImage result = ImageUtils.makeRoundedCorner(ImageUtil.toBufferedImage(image), 40);
 			icon.setImage(result);
 			this.avatar.setIcon(icon);

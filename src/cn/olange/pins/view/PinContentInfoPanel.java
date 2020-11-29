@@ -15,9 +15,11 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.ImageUtil;
+import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -63,7 +65,7 @@ public class PinContentInfoPanel extends JPanel implements Disposable {
 				try {
 					URL avatarLarge = new URL(avatarUrl);
 					ImageIcon icon = new ImageIcon(avatarLarge);
-					Image image = ImageUtils.scaleImage(icon.getImage(), 40, 40);
+					Image image = ImageUtil.scaleImage(icon.getImage(), 40, 40);
 					BufferedImage result = ImageUtils.makeRoundedCorner(ImageUtil.toBufferedImage(image), 40);
 					icon.setImage(result);
 					avatar.setIcon(icon);
@@ -86,6 +88,8 @@ public class PinContentInfoPanel extends JPanel implements Disposable {
 		if (user_interact.get("is_digg").getAsBoolean()) {
 			this.prise.setIcon(IconLoader.getIcon("/icons/prised.png"));
 		}
+		content.setForeground(UIUtil.getInactiveTextColor());
+		this.expand.setForeground(JBColor.blue);
 		this.prise.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

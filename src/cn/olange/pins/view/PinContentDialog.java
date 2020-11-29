@@ -43,8 +43,6 @@ import java.awt.event.WindowEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PinContentDialog extends JBPanel<PinContentDialog> {
-	private static final KeyStroke ENTER = KeyStroke.getKeyStroke(10, 0);
-	private static final KeyStroke ENTER_WITH_MODIFIERS = KeyStroke.getKeyStroke(10, SystemInfo.isMac ? 256 : 128);
 	private final Disposable myDisposable;
 	private Project project;
 	private JsonObject pinInfo;
@@ -73,7 +71,7 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		this.setLayout(new MigLayout("flowx, ins 4, gap 0, fillx, hidemode 3"));
 		this.myTitleLabel = new JBLabel("沸点详情", UIUtil.ComponentStyle.REGULAR);
 		this.myTitleLabel.setFont(this.myTitleLabel.getFont().deriveFont(1));
-		this.myLoadingDecorator = new LoadingDecorator(new JLabel(EmptyIcon.ICON_16), this.getDisposable(), 250, true, new AsyncProcessIcon("FindInPathLoading"));
+		this.myLoadingDecorator = new LoadingDecorator(new JLabel(EmptyIcon.ICON_16), this.myDisposable, 250, true, new AsyncProcessIcon("FindInPathLoading"));
 		this.myLoadingDecorator.setLoadingText("");
 		this.myTitlePanel = new JPanel(new MigLayout("flowx, ins 0, gap 0, fillx, filly"));
 		this.myTitlePanel.add(this.myTitleLabel);
@@ -81,9 +79,11 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		this.myTitlePanel.add(Box.createHorizontalGlue(), "growx, pushx");
 		this.add(this.myTitlePanel, "wrap");
 		PinContentInfoPanel pinContentInfoPanel = new PinContentInfoPanel(this.pinInfo, project);
+		Disposer.register(this.myDisposable, pinContentInfoPanel);
 		this.add(pinContentInfoPanel, "pushx, growx, sx 10, gaptop 4, wrap");
 		this.add(new JSeparator(), "pushx, growx, sx 10, gaptop 4, wrap");
 		commentList = new CommentList(project, pinInfo.get("msg_id").getAsString());
+		Disposer.register(this.myDisposable, commentList);
 		this.add(commentList, "pushx, growx, growy, pushy, sx 10, wrap, pad 4 4 4 4");
 	}
 
@@ -254,10 +254,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		}
 	}
 
-	@NotNull
-	public Disposable getDisposable() {
-		return this.myDisposable;
-	}
 
 	private void closeImmediately() {
 		if (this.canBeClosedImmediately() && this.myDialog != null && this.myDialog.isVisible()) {
@@ -267,12 +263,6 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 
 	}
 
-	private String convertRule(String rule) {
-		if (rule == null) {
-			return "";
-		}
-		return rule;
-	}
 
 	private boolean canBeClosedImmediately() {
 		boolean state = this.myIsPinned.get();

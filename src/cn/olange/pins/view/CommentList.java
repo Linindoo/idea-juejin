@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DoubleClickListener;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.SimpleTree;
@@ -33,7 +34,6 @@ import java.util.Map;
 public class CommentList extends JPanel implements Disposable {
 	private final Project project;
 	private final String pinID;
-	private JsonArray commentData = new JsonArray();
 	private int pageSize = 20;
 	private int pageNum = 1;
 	private String cursor = "0";
@@ -97,10 +97,10 @@ public class CommentList extends JPanel implements Disposable {
 							} else {
 								commentID = reply_info.getAsJsonObject().get("reply_comment_id").getAsString();
 								replyID = reply_info.getAsJsonObject().get("reply_id").getAsString();
-								replyUserID = reply_info.getAsJsonObject().get("reply_user_iD").getAsString();
+								replyUserID = reply_info.getAsJsonObject().get("user_id").getAsString();
 							}
 							JsonObject replyObj = pinsService.replyComment(pinID, commentID, replyID, replyUserID, text, config.getCookieValue());
-							if (replyObj != null && replyObj.get("data") != null) {
+							if (replyObj != null && replyObj.get("data") != null && !replyObj.get("data").isJsonNull()) {
 								SwingUtilities.invokeLater(() -> {
 									JsonObject reply = replyObj.get("data").getAsJsonObject();
 									DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(2, reply));
@@ -284,5 +284,8 @@ public class CommentList extends JPanel implements Disposable {
 
 	@Override
 	public void dispose() {
+		if (this.commentAlarm != null) {
+			Disposer.dispose(this.commentAlarm);
+		}
 	}
 }
