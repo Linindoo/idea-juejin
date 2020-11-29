@@ -2,8 +2,8 @@ package cn.olange.pins.model;
 
 import cn.olange.pins.PinsToolWindowFactory;
 import cn.olange.pins.utils.DataKeys;
+import cn.olange.pins.utils.ImageUtils;
 import cn.olange.pins.view.PinContentDialog;
-import cn.olange.pins.view.PinsToolWindowPanel;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.intellij.openapi.project.Project;
@@ -11,12 +11,10 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -109,12 +107,9 @@ public class ImageLoadingWorker extends SwingWorker<List<ImageIcon>, String> {
         for (JsonElement jsonElement : pictures) {
             ImageIcon ii = new ImageIcon();
             String filename = jsonElement.getAsString();
+            filename = ImageUtils.getThumbnailUrl(filename);
             try {
-                if(filename.startsWith("http")){
-                    ii.setImage(new ImageIcon(new URL(filename)).getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
-                }else{
-                    ii.setImage(new ImageIcon(ImageIO.read(new File(filename))).getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
-                }
+                ii.setImage(new ImageIcon(new URL(filename)).getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
                 images.add(ii);
                 publish("Loaded " + filename);
             } catch (IOException ioe) {

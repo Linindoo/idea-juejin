@@ -1,5 +1,6 @@
 package cn.olange.pins.utils;
 
+import com.intellij.util.ui.ImageUtil;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -78,7 +79,7 @@ public class ImageUtils {
 		}
 		int width = (int)((double)in.getWidth() * sx);
 		int height = (int)((double)in.getHeight() * sy);
-		BufferedImage dstImage = new BufferedImage(width, height, in.getType());
+		BufferedImage dstImage = ImageUtil.createImage(width, height, in.getType());
 		op.filter(in, dstImage);
 		return dstImage;
 	}

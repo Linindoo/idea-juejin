@@ -4,8 +4,10 @@ import com.google.gson.JsonObject;
 import com.intellij.ide.actions.searcheverywhere.SearchEverywhereUI;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -19,7 +21,18 @@ public class TableCellRender extends JPanel implements TableCellRenderer {
     public TableCellRender() {
         setLayout(new BorderLayout());
         title = new JBLabel();
-        myRule = new MycellRender();
+        myRule = new ColoredTableCellRenderer() {
+            @Override
+            protected void customizeCellRenderer(JTable jTable, @Nullable Object value, boolean b, boolean b1, int i, int i1) {
+                if (value instanceof JsonObject) {
+                    JsonObject ruleObj = (JsonObject) value;
+                    JsonObject msg_info = ruleObj.getAsJsonObject("msg_Info");
+                    this.append("(" + msg_info.get("comment_count").getAsString() + ")" + msg_info.get("content").getAsString(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+                }
+
+                setBorder(null);
+            }
+        };
         add(myRule, BorderLayout.CENTER);
         add(title, BorderLayout.WEST);
         moreCellRenderer = new MoreCellRenderer();

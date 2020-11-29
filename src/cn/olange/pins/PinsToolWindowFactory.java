@@ -1,8 +1,17 @@
 package cn.olange.pins;
 
+import cn.olange.pins.model.Config;
+import cn.olange.pins.model.Constant;
+import cn.olange.pins.service.PinsService;
+import cn.olange.pins.setting.JuejinPersistentConfig;
 import cn.olange.pins.view.PinsToolWindowPanel;
+import com.google.gson.JsonObject;
 import com.intellij.ide.DataManager;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -17,6 +26,25 @@ public class PinsToolWindowFactory implements ToolWindowFactory {
 	@Override
 	public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 		toolWindow.getContentManager().addContent(ContentFactory.SERVICE.getInstance().createContent(new PinsToolWindowPanel(project, "recommend"), "", false));
+		PinsService pinsService = PinsService.getInstance(project);
+		Config config = JuejinPersistentConfig.getInstance().getState();
+		if (config.isLogined()) {
+			ApplicationManager.getApplication().invokeLater(() -> {
+				JsonObject userInfo = pinsService.getUserInfo(config.getCookieValue());
+				if (userInfo != null && !userInfo.get("data").isJsonNull()) {
+					String userName = userInfo.get("data").getAsJsonObject().get("user_name").getAsString();
+					config.setNickname(userName);
+					config.setLogined(true);
+					updateTitle(project, userName);
+				} else {
+					config.setNickname("");
+					config.setLogined(false);
+					updateTitle(project, "未登录");
+				}
+			});
+		} else {
+			updateTitle(project, "未登录");
+		}
 	}
 
 	public static void updateTitle(@NotNull Project project, String userName) {

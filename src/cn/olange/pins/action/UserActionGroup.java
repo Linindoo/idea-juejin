@@ -1,6 +1,5 @@
 package cn.olange.pins.action;
 
-import cn.olange.pins.model.CatalogTag;
 import cn.olange.pins.model.Config;
 import cn.olange.pins.setting.JuejinPersistentConfig;
 import com.google.common.collect.Lists;

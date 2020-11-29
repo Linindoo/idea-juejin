@@ -1,7 +1,6 @@
 package cn.olange.pins.model;
 
 import com.intellij.ide.IdeBundle;
-import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.ui.JBInsets;

@@ -2,6 +2,7 @@ package cn.olange.pins.imageview;
 
 import cn.olange.pins.utils.ImageUtils;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.util.ui.ImageUtil;
 import com.intellij.util.ui.UIUtil;
 
 import javax.swing.*;
@@ -274,7 +275,7 @@ public class JImagePane extends JPanel {
 		i_height = ( int ) ( i_height * percent );
 
 		//get the scaled image
-		i_bak = new ImageIcon(ImageUtils.scaleImage(icon.getImage(),i_width,i_height));
+		i_bak = new ImageIcon(ImageUtil.scaleImage(icon.getImage(),i_width,i_height));
 		//update the size of image pane
 		if ( i_width > this.getWidth() || i_height > this.getHeight() ) {
 			this.setPaneSize(new Dimension(

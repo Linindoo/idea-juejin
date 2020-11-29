@@ -64,6 +64,15 @@
     <action id="juejin.LogoutAction" class="cn.olange.pins.action.LogoutAction"
             text="注销" description="Sign out" icon="/icons/logout.png">
     </action>
+    <action id="juejin.Setting" class="cn.olange.pins.action.ConfigAction"
+            text="设置" description="setting" >
+    </action>
+    <action id="juejin.HelpAction" class="cn.olange.pins.action.HelpAction"
+            text="帮助" description="help" icon="JuejinIcons.HELP">
+    </action>
+    <action id="juejin.RefreshAction" class="cn.olange.pins.action.RefreshPinsAction"
+            text="刷新" description="refresh">
+    </action>
   </actions>
 
 </idea-plugin>

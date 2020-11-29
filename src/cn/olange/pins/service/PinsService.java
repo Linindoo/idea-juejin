@@ -140,4 +140,15 @@ public class PinsService {
 		}
 		return false;
 	}
+
+	public String getPreLogin() {
+		try {
+			String result = HttpUtil.getJson("https://open.weixin.qq.com/connect/qrconnect?appid=wx5059f665cac93f16&redirect_uri=https%3A%2F%2Fjuejin.cn%2Fpassport%2Fauth%2Flogin_success&response_type=code&scope=snsapi_login&state=136023ea3gASoVCgoVPZIDRmNjQzY2IyYThlODJjNzU0OWFlY2E4YzhhN2U0ZjIwoU6-aHR0cHM6Ly9qdWVqaW4uY24vb2F1dGgtcmVzdWx0oVYBoUkAoUQAoUHRCjChTdEKMKFIqWp1ZWppbi5jbqFSBKJQTNEE_aZBQ1RJT06goUyyaHR0cHM6Ly9qdWVqaW4uY24voVTZIGZkN2I5MjUxNzQxMzY5ZGI2ZTZlNmI1MTJhYjEwODJhoVcAoUYAolNBAKFVww%253D%253D");
+			System.out.println(result);
+			return result;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
