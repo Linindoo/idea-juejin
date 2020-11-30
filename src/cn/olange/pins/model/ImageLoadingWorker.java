@@ -54,9 +54,11 @@ public class ImageLoadingWorker extends SwingWorker<List<ImageIcon>, String> {
 
     @Override
     protected void done() {
-        System.out.println("done()");
-        viewer.removeAll();
+        if (this.isCancelled()) {
+            return;
+        }
         try {
+            viewer.removeAll();
             for (int i = 0; i < get().size(); i++) {
                 ImageIcon imageIcon = get().get(i);
                 JLabel jl = new JLabel(imageIcon);
@@ -91,16 +93,13 @@ public class ImageLoadingWorker extends SwingWorker<List<ImageIcon>, String> {
 
     @Override
     protected void process(List<String> messages) {
-        System.out.println("process()");
         for (String message : messages) {
-            log.append(message);
-            log.append("\n");
+            System.out.println(message);
         }
     }
 
     @Override
     public List<ImageIcon> doInBackground() {
-        System.out.println("doInBackground()");
         List<ImageIcon> images = new ArrayList<ImageIcon>();
         int width = 115;
         int height = 79;

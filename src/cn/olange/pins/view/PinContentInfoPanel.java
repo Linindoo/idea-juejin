@@ -177,7 +177,9 @@ public class PinContentInfoPanel extends JPanel implements Disposable {
 	@Override
 	public void dispose() {
 		if (imageLoadingWorker != null) {
-			imageLoadingWorker.cancel(true);
+			ApplicationManager.getApplication().invokeLater(()->{
+				imageLoadingWorker.cancel(true);
+			});
 		}
 	}
 }
