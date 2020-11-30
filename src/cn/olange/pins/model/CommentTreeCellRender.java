@@ -1,5 +1,6 @@
 package cn.olange.pins.model;
 
+import com.google.gson.JsonElement;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.JBColor;
@@ -83,8 +84,12 @@ public class CommentTreeCellRender extends JPanel implements TreeCellRenderer {
             } else if (commentTreeNode.getLevel() == 2) {
                 String userName = commentTreeNode.getItem().get("user_info").getAsJsonObject().get("user_name").getAsString();
                 this.user.setText(userName);
-                String replyUserName = commentTreeNode.getItem().getAsJsonObject("reply_user").get("user_name").getAsString();
-                replyActionRender.getTreeCellRendererComponent(tree, replyUserName, selected, expanded, leaf, row, hasFocus);
+                JsonElement reply_user = commentTreeNode.getItem().get("reply_user");
+                if (reply_user == null || reply_user.isJsonNull()) {
+                    replyActionRender.getTreeCellRendererComponent(tree, "", selected, expanded, leaf, row, hasFocus);
+                }else {
+                    replyActionRender.getTreeCellRendererComponent(tree, reply_user.getAsJsonObject().get("user_name").getAsString(), selected, expanded, leaf, row, hasFocus);
+                }
                 String commentContent = commentTreeNode.getItem().getAsJsonObject("reply_info").get("reply_content").getAsString();
                 treeCellRenderer.getTreeCellRendererComponent(tree, commentContent, selected, expanded, leaf, row, hasFocus);
             }

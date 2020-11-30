@@ -21,10 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -89,7 +86,8 @@ public class CommentList extends JPanel implements Disposable {
 								});
 							}
 						} else {
-							JsonObject nodeItem = ((CommentNode) selectNode.getUserObject()).getItem();
+							CommentNode userObject = (CommentNode) selectNode.getUserObject();
+							JsonObject nodeItem = userObject.getItem();
 							JsonElement reply_info = nodeItem.get("reply_info");
 							String commentID, replyID = "", replyUserID = "";
 							if (reply_info == null || reply_info.isJsonNull()) {
@@ -104,8 +102,14 @@ public class CommentList extends JPanel implements Disposable {
 								SwingUtilities.invokeLater(() -> {
 									JsonObject reply = replyObj.get("data").getAsJsonObject();
 									DefaultMutableTreeNode commentNode = new DefaultMutableTreeNode(new CommentNode(2, reply));
-									((DefaultMutableTreeNode) selectNode.getParent()).add(commentNode);
-									model.nodeStructureChanged(selectNode.getParent());
+									if (userObject.getLevel() == 1) {
+										selectNode.insert(commentNode, 0);
+										model.nodeStructureChanged(selectNode);
+									} else {
+										DefaultMutableTreeNode parent = (DefaultMutableTreeNode) selectNode.getParent();
+										parent.insert(commentNode, 0);
+										model.nodeStructureChanged(parent);
+									}
 								});
 							}
 						}
