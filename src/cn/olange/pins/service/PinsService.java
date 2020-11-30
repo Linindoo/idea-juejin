@@ -1,14 +1,12 @@
 package cn.olange.pins.service;
 
 import cn.olange.pins.model.AsyncResult;
-import cn.olange.pins.model.Config;
 import cn.olange.pins.model.Handler;
-import cn.olange.pins.setting.JuejinPersistentConfig;
 import cn.olange.pins.utils.HttpUtil;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.lang.StringUtils;
@@ -29,7 +27,7 @@ public class PinsService {
 		query.addProperty("cursor", endCursor);
 		try {
 			String result = HttpUtil.postJson("https://apinew.juejin.im/recommend_api/v1/short_msg/" + topic, query.toString(), cookieValue);
-			JsonObject jObject = JsonParser.parseString(result).getAsJsonObject();
+			JsonObject jObject = new Gson().fromJson(result, JsonObject.class);
 			handler.handle(new AsyncResult(true, jObject));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -46,7 +44,7 @@ public class PinsService {
 			jsonObject.addProperty("item_type", 4);
 			jsonObject.addProperty("limit", pageSize);
 			String json = HttpUtil.postJson("https://apinew.juejin.im/interact_api/v1/comment/list", jsonObject.toString());
-			JsonObject result = JsonParser.parseString(json).getAsJsonObject();
+			JsonObject result = new Gson().fromJson(json, JsonObject.class);
 			handler.handle(new AsyncResult(true, result));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -64,7 +62,7 @@ public class PinsService {
 			params.addProperty("item_type", 4);
 			params.addProperty("limit", pageSize);
 			String json = HttpUtil.postJson(COMMENT_URL, params.toString());
-			JsonObject result = JsonParser.parseString(json).getAsJsonObject();
+			JsonObject result = new Gson().fromJson(json, JsonObject.class);
 			handler.handle(new AsyncResult(true, result));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -75,7 +73,7 @@ public class PinsService {
 	public JsonObject getUserInfo(String cookieValue) {
 		try {
 			String json = HttpUtil.getJson("https://api.juejin.cn/user_api/v1/user/get?aid=2608&not_self=0", cookieValue);
-			return JsonParser.parseString(json).getAsJsonObject();
+			return new Gson().fromJson(json, JsonObject.class);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -92,7 +90,7 @@ public class PinsService {
 		try {
 			String resp = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/comment/publish", params.toString(), cookieValue);
 			if (StringUtils.isNotEmpty(resp)) {
-				return JsonParser.parseString(resp).getAsJsonObject();
+				return new JsonParser().parse(resp).getAsJsonObject();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -106,15 +104,14 @@ public class PinsService {
 		params.addProperty("reply_content", replyContent);
 		params.add("reply_pics", new JsonArray());
 		params.addProperty("reply_to_comment_id", commentID);
-		params.addProperty("reply_to_reply_id", replyID);
-		params.addProperty("reply_to_user_id", replyUserID);
+		params.addProperty("reply_to_reply_id", StringUtils.isEmpty(replyID) ? null : replyID);
+		params.addProperty("reply_to_user_id", StringUtils.isEmpty(replyUserID) ? null : replyUserID);
 		params.addProperty("item_id", pinID);
 		params.addProperty("item_type", 4);
 		try {
 			String resp = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/reply/publish", params.toString(), cookieValue);
-			System.out.println(resp);
 			if (StringUtils.isNotEmpty(resp)) {
-				return JsonParser.parseString(resp).getAsJsonObject();
+				return new Gson().fromJson(resp, JsonObject.class);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -130,7 +127,7 @@ public class PinsService {
 			params.addProperty("item_type", 4);
 			String ret = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/digg/save", params.toString(), cookieValue);
 			if (StringUtils.isNotEmpty(ret)) {
-				JsonObject result = JsonParser.parseString(ret).getAsJsonObject();
+				JsonObject result = new Gson().fromJson(ret, JsonObject.class);
 				if (result.get("err_no").getAsInt() == 0) {
 					return true;
 				}
