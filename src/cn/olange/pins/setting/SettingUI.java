@@ -14,10 +14,8 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.concurrency.EdtScheduledExecutorService;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.net.util.Base64;
 import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
@@ -29,7 +27,9 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,6 +46,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
   private JLabel resultLabel;
   private ButtonGroup radioGroup;
   private Editor cookieEditor = null;
+  private ScheduledFuture<?> schedule;
 
   @Override
   public boolean isModified(@NotNull SettingConfigurable settings) {
@@ -66,11 +67,18 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
         }
       }
     });
+    wechatCode.setEnabled(false);
     directInput.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(ItemEvent e) {
         if (directInput.isSelected()) {
           cookieType = Constant.cookieType.DIRECT.name();
+          extendPanel.setVisible(false);
+          if (schedule != null) {
+            ApplicationManager.getApplication().invokeLater(()->{
+              schedule.cancel(true);
+            });
+          }
         }
       }
     });
@@ -85,6 +93,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
 
     cookieEditorPanel.setLayout(new BorderLayout());
     cookieEditorPanel.add(jbScrollPane, BorderLayout.CENTER);
+    extendPanel.setVisible(false);
   }
 
   private void refreshQrCode() {
@@ -101,9 +110,8 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
           URL location = new URL("https://open.weixin.qq.com" + src);
           UIUtil.invokeLaterIfNeeded(()->{
             imageIcon.setImage(new ImageIcon(location).getImage().getScaledInstance(100, 100, Image.SCALE_DEFAULT));
-            JLabel label = new JLabel(imageIcon);
             qrcodeImage.setIcon(imageIcon);
-            EdtScheduledExecutorService.getInstance().schedule(() -> {
+            schedule = EdtScheduledExecutorService.getInstance().schedule(() -> {
               checkLogin(UID, "");
             }, 1, TimeUnit.SECONDS);
           });
@@ -223,5 +231,15 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
   @NotNull
   public JComponent getComponent() {
     return mainPanel;
+  }
+
+  public static void main(String[] args) throws UnsupportedEncodingException {
+
+    byte[] encodeBase64 = Base64.decodeBase64("0320a3ea3gASoVCgoVPZIGFlZWNlYjM0ZDA2MzI2MDkwZWY4ODNhOWUwNjQ0YTdk".getBytes("utf8"));
+    System.out.println(new String(encodeBase64,"utf8"));
+    Base64.encodeBase64("MONITOR_WEB_ID=775b7203-9bc4-4b8d-8d14-1a319848e157; _ga=GA1.2.2064622558.1605930219; passport_csrf_token=9a7e7c7149aea28bfc0697feed42b227; n_mh=8ILeBbaIEsvj6SFzOxEh8q1y6g9WwOLOFXivO3c2G4Q; _gid=GA1.2.1256517162.1606628538".getBytes());
+
+    byte[] reets = Base64.decodeBase64("aeeceb34ddsdf4er4te43306326090ef883a9e0644a7d");
+    System.out.println(new String(reets));
   }
 }
