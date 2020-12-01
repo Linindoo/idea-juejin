@@ -32,8 +32,10 @@ public class PinsToolWindowFactory implements ToolWindowFactory {
 			ApplicationManager.getApplication().invokeLater(() -> {
 				JsonObject userInfo = pinsService.getUserInfo(config.getCookieValue());
 				if (userInfo != null && !userInfo.get("data").isJsonNull()) {
-					String userName = userInfo.get("data").getAsJsonObject().get("user_name").getAsString();
+					JsonObject data = userInfo.get("data").getAsJsonObject();
+					String userName = data.get("user_name").getAsString();
 					config.setNickname(userName);
+					config.setUserId(data.get("user_id").getAsString());
 					config.setLogined(true);
 					updateTitle(project, userName);
 				} else {

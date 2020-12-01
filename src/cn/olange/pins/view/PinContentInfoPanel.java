@@ -61,18 +61,20 @@ public class PinContentInfoPanel extends JPanel implements Disposable {
 		JsonObject actor  = this.pinItem.get("author_user_info").getAsJsonObject();
 		String avatarUrl = actor.get("avatar_large").getAsString();
 		if (StringUtils.isNotEmpty(avatarUrl)) {
-			ApplicationManager.getApplication().invokeLater(() -> {
+			new Thread(() -> {
 				try {
 					URL avatarLarge = new URL(avatarUrl);
 					ImageIcon icon = new ImageIcon(avatarLarge);
 					Image image = ImageUtil.scaleImage(icon.getImage(), 40, 40);
 					BufferedImage result = ImageUtils.makeRoundedCorner(ImageUtil.toBufferedImage(image), 40);
 					icon.setImage(result);
-					avatar.setIcon(icon);
+					UIUtil.invokeLaterIfNeeded(()->{
+						avatar.setIcon(icon);
+					});
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				}
-			});
+			}).start();
 		}
 		Config config = JuejinPersistentConfig.getInstance().getState();
 		this.nickname.setText(actor.get("user_name").getAsString());

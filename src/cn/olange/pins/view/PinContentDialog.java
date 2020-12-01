@@ -18,6 +18,7 @@ import com.intellij.openapi.util.DimensionService;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.IdeGlassPane;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
@@ -85,6 +86,9 @@ public class PinContentDialog extends JBPanel<PinContentDialog> {
 		commentList = new CommentList(project, pinInfo.get("msg_id").getAsString());
 		Disposer.register(this.myDisposable, commentList);
 		this.add(commentList, "pushx, growx, growy, pushy, sx 10, wrap, pad 4 4 4 4");
+		ApplicationManager.getApplication().invokeLater(() -> {
+			IdeFocusManager.getInstance(this.project).requestFocus(pinContentInfoPanel, true);
+		});
 	}
 
 	public void showImageDialog(JsonArray pictures, int index) {
