@@ -4,6 +4,7 @@ package cn.olange.pins.model;
 public class Config {
     private boolean logined;
     private String nickname;
+    private String userId;
     private String userName;
     private String password;
     private String curentCatalog;
@@ -68,5 +69,13 @@ public class Config {
 
     public void setCookieType(String cookieType) {
         this.cookieType = cookieType;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

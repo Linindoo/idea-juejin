@@ -119,6 +119,19 @@ public class PinsService {
 		return new JsonObject();
 	}
 
+	public boolean deleteComment(String commentID, String cookieValue) {
+		try {
+			JsonObject params = new JsonObject();
+			params.addProperty("comment_id", commentID);
+			String result = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/comment/delete", params.toString(), cookieValue);
+			JsonObject ret = new Gson().fromJson(result, JsonObject.class);
+			return ret.get("err_no").getAsInt() == 0;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 
 	public boolean praise(String pinID, String cookieValue) {
 		JsonObject params = new JsonObject();
@@ -148,4 +161,5 @@ public class PinsService {
 		}
 		return null;
 	}
+
 }

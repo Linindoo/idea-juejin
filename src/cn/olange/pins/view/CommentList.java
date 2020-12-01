@@ -1,16 +1,24 @@
 package cn.olange.pins.view;
 
-import cn.olange.pins.model.*;
+import cn.olange.pins.model.CommentNode;
+import cn.olange.pins.model.CommentTreeCellRender;
+import cn.olange.pins.model.Config;
+import cn.olange.pins.model.NeedMore;
 import cn.olange.pins.service.PinsService;
 import cn.olange.pins.setting.JuejinPersistentConfig;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DoubleClickListener;
 import com.intellij.ui.components.JBScrollPane;
@@ -24,6 +32,7 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,13 +64,26 @@ public class CommentList extends JPanel implements Disposable {
 		JPanel bottomPanel = new JPanel(new BorderLayout());
 		replyPanel = new JButton();
 		replyPanel.setLayout(new BorderLayout());
-		replyPanel.add(new ReplyUserActionButton(new ReplyUserActionButton.ClearAction() {
+		JLabel label = new JLabel(AllIcons.Actions.Close);
+		replyPanel.add(label, BorderLayout.EAST);
+		label.addMouseListener(new MouseAdapter() {
 			@Override
-			public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+			public void mouseClicked(MouseEvent e) {
 				replyPanel.setVisible(false);
 				selectNode = null;
 			}
-		}), BorderLayout.EAST);
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				label.setIcon(AllIcons.Actions.CloseHovered);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				label.setIcon(AllIcons.Actions.Close);
+
+			}
+		});
 		bottomPanel.add(replyPanel, BorderLayout.WEST);
 		replyPanel.setVisible(false);
 
@@ -146,6 +168,47 @@ public class CommentList extends JPanel implements Disposable {
 		root = new DefaultMutableTreeNode("");
 		jxTree.setModel(new DefaultTreeModel(root));
 		this.jxTree.setCellRenderer(new CommentTreeCellRender());
+		final ActionManager actionManager = ActionManager.getInstance();
+		this.jxTree.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (!config.isLogined()) {
+					return;
+				}
+				if (e.getButton() != 3) {
+					return;
+				}
+				TreePath selPath = jxTree.getClosestPathForLocation(e.getX(), e.getY());
+				if (selPath == null) {
+					return;
+				}
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+				if (node.getUserObject() instanceof CommentNode) {
+					CommentNode commentNode = (CommentNode) node.getUserObject();
+					JsonObject item = commentNode.getItem();
+					JsonElement userInfo = item.get("user_info");
+					if (userInfo != null && !userInfo.isJsonNull() && Comparing.strEqual(userInfo.getAsJsonObject().get("user_id").getAsString(), config.getUserId())) {
+						DefaultActionGroup actionGroup = new DefaultActionGroup("Juejuin.Comment.Popup", true);
+						AnAction anAction = new AnAction("删除","Delete",AllIcons.Actions.CloseHovered) {
+							@Override
+							public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+								PinsService instance = PinsService.getInstance(project);
+								String commentID = commentNode.getLevel() == 1 ? item.get("comment_id").getAsString() : item.get("reply_id").getAsString();
+								boolean result = instance.deleteComment(commentID, config.getCookieValue());
+								if (result) {
+									DefaultTreeModel model = (DefaultTreeModel) jxTree.getModel();
+									TreeNode parent = node.getParent();
+									node.removeFromParent();
+									model.nodeStructureChanged(parent);
+								}
+							}
+						};
+						actionGroup.add(anAction);
+						actionManager.createActionPopupMenu("", actionGroup).getComponent().show(e.getComponent(), e.getX(), e.getY());
+					}
+				}
+			}
+		});
 		(new DoubleClickListener() {
 			protected boolean onDoubleClick(MouseEvent event) {
 				if (event.getSource() != CommentList.this.jxTree) {
