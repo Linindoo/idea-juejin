@@ -152,19 +152,13 @@ public class CommentList extends JPanel implements Disposable {
 		bottomPanel.add(commentBtn, BorderLayout.EAST);
 		this.add(bottomPanel, BorderLayout.NORTH);
 		jxTree = new SimpleTree();
-		JBScrollPane scrollPane = new JBScrollPane(this.jxTree){
-			public Dimension getMinimumSize() {
-				Dimension size = super.getMinimumSize();
-				size.height = jxTree.getHeight();
-				return size;
-			}
-		};
+		JBScrollPane scrollPane = new JBScrollPane(this.jxTree);
 		scrollPane.setBorder(JBUI.Borders.empty());
 		this.add(scrollPane, BorderLayout.CENTER);
 		jxTree.setOpaque(false);
 		jxTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		jxTree.setRootVisible(false);
-		jxTree.getEmptyText().clear();
+		jxTree.getEmptyText().setText("水至清则无鱼");
 		root = new DefaultMutableTreeNode("");
 		jxTree.setModel(new DefaultTreeModel(root));
 		this.jxTree.setCellRenderer(new CommentTreeCellRender());
