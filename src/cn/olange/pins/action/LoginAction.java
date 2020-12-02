@@ -24,7 +24,6 @@ public class LoginAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-        System.out.println("login");
         Config config = JuejinPersistentConfig.getInstance().getConfig();
         if (config.isLogined()) {
             return;

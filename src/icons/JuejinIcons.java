@@ -9,5 +9,5 @@ public interface JuejinIcons {
 
     Icon HELP = IconLoader.getIcon("/icons/help.png");
     Icon Delete = AllIcons.Actions.CloseHovered;
-
+    Icon More = IconLoader.getIcon("/icons/more.png");
 }

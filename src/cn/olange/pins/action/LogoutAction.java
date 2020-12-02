@@ -15,7 +15,6 @@ public class LogoutAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-        System.out.println("logout");
         Config config = JuejinPersistentConfig.getInstance().getConfig();
         if (!config.isLogined()) {
             return;
