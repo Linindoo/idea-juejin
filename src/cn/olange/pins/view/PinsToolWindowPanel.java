@@ -40,14 +40,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Disposable, DataProvider {
 	public JPanel pins;
 	private JPanel toolbar;
 	private JPanel contentPanel;
 	private JBTable pinTable;
-	//	private JList pinList;
 	private Project project;
 	private String topic;
 	private JsonArray datas = new JsonArray();
@@ -130,12 +128,6 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		this.scheduleResultsUpdate();
 	}
 
-	public static void showNotification(final JComponent component, final MessageType info, final String message, final Balloon.Position position) {
-		UIUtil.invokeLaterIfNeeded(() -> JBPopupFactory.getInstance().createBalloonBuilder(new JLabel(message))
-				.setFillColor(info.getPopupBackground())
-				.createBalloon()
-				.show(new RelativePoint(component, new Point(0, 0)), position));
-	}
 
 
 	@Override
@@ -164,7 +156,6 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		model.addColumn("Usages");
 		this.pinTable.setModel(model);
 		this.pinTable.getColumnModel().getColumn(0).setCellRenderer(new TableCellRender());
-		final AtomicInteger resultsCount = new AtomicInteger();
 		ApplicationManager.getApplication().invokeLater(() -> {
 			pinTable.setPaintBusy(true);
 			Config config = JuejinPersistentConfig.getInstance().getConfig();
@@ -192,7 +183,6 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 				} else {
 					UIUtil.invokeLaterIfNeeded(() -> {
 						pinTable.getEmptyText().setText("获取数据失败，请稍后刷新重试");
-						showNotification(pinTable, MessageType.ERROR, "获取数据失败，请稍后重试", Balloon.Position.atRight);
 					});
 				}
 				pinTable.setPaintBusy(false);

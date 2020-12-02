@@ -129,9 +129,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
       if (StringUtils.isNotEmpty(last)) {
         url = url + "&last=" + last;
       }
-      System.out.println(url);
       String json = HttpUtil.getLonTimeJson(url);
-      System.out.println(json);
       Pattern compile = Pattern.compile("window.wx_errcode=([0-9]*?);window.wx_code='(.*?)';");
       Matcher matcher = compile.matcher(json);
       if (matcher.find()) {
@@ -141,11 +139,8 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
             String h = "https://juejin.cn/passport/auth/login_success";
             h = h.replace("&amp;", "&");
             h += "?" + "code=" + ID + "&state=d1c87c2d3gASoVCgoVPZIDgyZDc4NThkNTViMmEwOWM4Y2ZhOTgzMDhkZTVmOGQ2oU6-aHR0cHM6Ly9qdWVqaW4uY24vb2F1dGgtcmVzdWx0oVYBoUkAoUQAoUHRCjChTdEKMKFIqWp1ZWppbi5jbqFSBKJQTNEE_aZBQ1RJT06goUyyaHR0cHM6Ly9qdWVqaW4uY24voVTZIDQ3OWUwYmZmYmZiZGEyOGE3YzZjMjY0YWIwMGQ4NjQyoVcAoUYAolNBAKFVww%3D%3D";
-            System.out.println(h);
             CloseableHttpResponse response = HttpUtil.getResponse(h);
             Header[] allHeaders = response.getAllHeaders();
-            System.out.println(allHeaders);
-
 //            var i = c("self_redirect");
 //            if (d)
 //              if ("true" !== i && "false" !== i)
