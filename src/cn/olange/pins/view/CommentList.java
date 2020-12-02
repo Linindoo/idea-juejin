@@ -25,6 +25,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.Alarm;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -216,6 +217,9 @@ public class CommentList extends JPanel implements Disposable {
 					if (node.getUserObject() instanceof NeedMore) {
 						TreePath parentPath = selectionPath.getParentPath();
 						DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+						if (parentNode.getIndex(node) < 0) {
+							return true;
+						}
 						parentNode.remove(node);
 						if (parentNode.getUserObject() instanceof CommentNode) {
 							CommentNode treeNode = (CommentNode) parentNode.getUserObject();
@@ -271,10 +275,11 @@ public class CommentList extends JPanel implements Disposable {
 	}
 
 	private void findComments(DefaultMutableTreeNode parentNode) {
-		final ModalityState state = ModalityState.current();
 		this.commentAlarm.cancelAllRequests();
-		ApplicationManager.getApplication().invokeLater(() -> {
-			jxTree.setPaintBusy(true);
+		ApplicationManager.getApplication().executeOnPooledThread(() -> {
+			UIUtil.invokeAndWaitIfNeeded((Runnable) ()->{
+				jxTree.setPaintBusy(true);
+			});
 			PinsService instance = PinsService.getInstance(project);
 			instance.getComments(cursor, pageSize, pinID, result -> {
 				if (result.isSuccess()) {
@@ -310,13 +315,12 @@ public class CommentList extends JPanel implements Disposable {
 					jxTree.getEmptyText().setText("数据获取失败");
 				}
 			});
-		}, state);
+		});
 	}
 
 	private void getCommentReply(String commentID, String replyCursor, DefaultMutableTreeNode parentNode) {
-		final ModalityState state = ModalityState.current();
 		this.commentAlarm.cancelAllRequests();
-		ApplicationManager.getApplication().invokeLater(() -> {
+		ApplicationManager.getApplication().executeOnPooledThread(() -> {
 			jxTree.setPaintBusy(true);
 			PinsService instance = PinsService.getInstance(project);
 			instance.getCommentReply(replyCursor, pageSize, commentID, pinID, result -> {
@@ -340,7 +344,7 @@ public class CommentList extends JPanel implements Disposable {
 					});
 				}
 			});
-		}, state);
+		});
 	}
 
 	@Override
