@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class SettingConfigurable implements SearchableConfigurable {
-    public static final String DISPLAY_NAME = "juejin plugin";
+    public static final String DISPLAY_NAME = "juejin config";
 
     private SettingUI mainPanel;
     @NotNull
