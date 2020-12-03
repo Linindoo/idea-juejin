@@ -1,7 +1,9 @@
 package cn.olange.pins.model;
 
+import cn.olange.pins.setting.JuejinPersistentConfig;
 import com.google.gson.JsonObject;
 import com.intellij.ide.IdeBundle;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
@@ -55,14 +57,19 @@ public class TableCellRender extends JPanel implements TableCellRenderer {
         myRule.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         Color color = isSelected ? table.getSelectionBackground() : table.getBackground();
         setBackground(color);
+        Config config = JuejinPersistentConfig.getInstance().getState();
         title.setBackground(color);
-        title.setForeground(JBColor.blue);
         myRule.setBackground(color);
         if (value instanceof JsonObject) {
-            JsonObject ruleObj = (JsonObject) value;
-            this.title.setText(ruleObj.getAsJsonObject("author_user_info").get("user_name").getAsString());
+            JsonObject item = (JsonObject) value;
+            if (config.isLogined() && Comparing.strEqual(config.getUserId(), item.getAsJsonObject("author_user_info").get("user_id").getAsString())) {
+                this.title.setForeground(JBColor.GREEN);
+            } else {
+                title.setForeground(JBColor.blue);
+            }
+            this.title.setText(item.getAsJsonObject("author_user_info").get("user_name").getAsString());
         } else if (value instanceof NeedMore) {
-            return moreCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus,row,column);
+            return moreCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
         return this;
     }
