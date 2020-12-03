@@ -1,32 +1,38 @@
 <idea-plugin>
   <id>cn.olange.pins</id>
   <name>juejin-pins</name>
-  <version>1.0.5</version>
-  <vendor email="olange@52zhoujia.cn" url="https://github.com/zhoriya/idea-juejin">olange</vendor>
+  <version>1.0.6</version>
+  <vendor email="olange@52zhoujia.cn" url="https://github.com/Linindoo/idea-juejin">olange</vendor>
 
   <description><![CDATA[
   <p>juejin pins plugin</p>
   <p> A idea plugin for juejin </p>
    <p>here is the main functions:</p>
    <em>1.Get the latest trends in juejin</em>
-   <em>2.Support image browsing in various formats</em>
-   <em>3.Communicate with developer </em>
-   <em>4.Swimm and fish </em>
-   <p> juejin-pins是一款增强idea对juejin社区支持的插件，数据来源于<a href="https://juejin.im/">掘金</a>，目前可以提供以下功能 </p>
-   <em>1.获取热点信息</em>
-   <em>2.支持图片浏览</em>
-   <em>3.查看沸点评论</em>
-   <em>4.摸鱼</em>
+   <em>2.Support login in juejin</em>
+   <em>3. more beauty and more yellow </em>
+   <em>4.Communicate with developer </em>
+   <em>4.prise and fish </em>
+   <p> juejin-pins是一款增强idea对juejin社区支持的插件，目前可以提供以下功能 </p>
+   <em>1.支持推荐，热门沸点切换刷新</em>
+   <em>2.支持简单登录</em>
+   <em>3.支持沸点详情查看，大图浏览</em>
+   <em>4.评论+回复</em>
+   <em>5.点赞</em>
     ]]></description>
   <change-notes><![CDATA[
-  <html>
       <ul>
-        <li>1.优化沸点显示性能</li>
-        <li>2.添加热门板块</li>
-        <li>3.显示主题分类</li>
+          <li>v1.0.6<br>
+             1.简单登录.<br>
+             2.实现评论、点赞交互<br>
+             3.UI性能大幅优化<br>
+          </li>
+          <li> v1.0.5 <br/>
+          1.优化沸点显示性能
+          2.添加热门板块
+          3.显示主题分类
+          </li>
       </ul>
-      <em></em>
-      </html>
     ]]>
   </change-notes>
   <depends>com.intellij.modules.platform</depends>
