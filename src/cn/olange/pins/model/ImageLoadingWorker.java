@@ -92,13 +92,6 @@ public class ImageLoadingWorker extends SwingWorker<List<ImageIcon>, String> {
     }
 
     @Override
-    protected void process(List<String> messages) {
-        for (String message : messages) {
-            System.out.println(message);
-        }
-    }
-
-    @Override
     public List<ImageIcon> doInBackground() {
         List<ImageIcon> images = new ArrayList<ImageIcon>();
         int width = 115;

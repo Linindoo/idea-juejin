@@ -193,17 +193,15 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
     }
   }
 
-  private void toRefreshLogin() {
-
-  }
-
   @Override
   public void reset(@NotNull SettingConfigurable settings) {
     Config config = JuejinPersistentConfig.getInstance().getState();
     this.cookieType = config.getCookieType();
-    ApplicationManager.getApplication().runWriteAction(() -> {
-      cookieEditor.getDocument().setText(config.getCookieValue());
-    });
+    if (StringUtils.isNotEmpty(config.getCookieValue())) {
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        cookieEditor.getDocument().setText(config.getCookieValue());
+      });
+    }
     if (Constant.cookieType.DIRECT.name().equalsIgnoreCase(cookieType)) {
       radioGroup.setSelected(directInput.getModel(), true);
     } else if (Constant.cookieType.QRCODE.name().equalsIgnoreCase(cookieType)) {

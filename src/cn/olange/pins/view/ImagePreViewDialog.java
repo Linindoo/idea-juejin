@@ -203,18 +203,17 @@ public class ImagePreViewDialog extends DialogWrapper implements Disposable {
 	}
 
 	private void previewImage(String imageUrl) {
-		ApplicationManager.getApplication().runReadAction(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					URL url = new URL(imageUrl);
-					ImageIcon icon = new ImageIcon(url);
+		ApplicationManager.getApplication().executeOnPooledThread(() -> {
+			try {
+				URL url = new URL(imageUrl);
+				ImageIcon icon = new ImageIcon(url);
+				UIUtil.invokeLaterIfNeeded(()->{
 					imagePane.drawPicture(icon);
 					image_url_text.setText(imageUrl + " \n " + icon.getIconWidth() + " × " + icon.getIconHeight() + " 像素   ");
 					validateBtn();
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				}
+				});
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
 			}
 		});
 	}
