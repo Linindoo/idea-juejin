@@ -79,6 +79,9 @@
     <action id="juejin.RefreshAction" class="cn.olange.pins.action.RefreshPinsAction"
             text="刷新" description="refresh">
     </action>
+    <action id="juejin.MessageAction" class="cn.olange.pins.action.MessageInfoAction"
+            text="消息" description="message">
+    </action>
   </actions>
 
 </idea-plugin>

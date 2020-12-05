@@ -67,6 +67,7 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		actionGroup.addSeparator();
 		actionGroup.add(new UserActionGroup());
 		actionGroup.add(actionManager.getAction("juejin.Setting"));
+		actionGroup.add(actionManager.getAction("juejin.MessageAction"));
 		actionGroup.add(actionManager.getAction("juejin.HelpAction"));
 		actionGroup.addSeparator();
 		ActionGroup catalogGroup = (ActionGroup) actionManager.getAction("Juejuin.Category");
@@ -146,7 +147,6 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		if (this.isShowing()) {
 			ScrollingUtil.ensureSelectionExists(this.pinTable);
 		}
-		final ModalityState state = ModalityState.current();
 		this.mySearchRescheduleOnCancellationsAlarm.cancelAllRequests();
 		final DefaultTableModel model = new DefaultTableModel() {
 			public boolean isCellEditable(int row, int column) {

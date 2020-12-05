@@ -161,4 +161,34 @@ public class PinsService {
 		return null;
 	}
 
+	public JsonObject getMessageInfo(String cookieValue) {
+		try {
+			String result = HttpUtil.getJson("https://api.juejin.cn/interact_api/v1/message/count", cookieValue);
+			if (StringUtils.isNotEmpty(result)) {
+				return new Gson().fromJson(result, JsonObject.class);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new JsonObject();
+
+	}
+
+	public JsonObject getMessageList(int msgType, int pageSize, String cursor, String cookieValue) {
+		JsonObject params = new JsonObject();
+		params.addProperty("aid", 2608);
+		params.addProperty("cursor", cursor);
+		params.addProperty("limit", pageSize);
+		params.addProperty("message_type", msgType);
+
+		try {
+			String result = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/message/get_message", params.toString(), cookieValue);
+			if (StringUtils.isNotEmpty(result)) {
+				return new Gson().fromJson(result,JsonObject.class);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
