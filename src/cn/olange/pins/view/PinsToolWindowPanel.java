@@ -1,7 +1,5 @@
 package cn.olange.pins.view;
 
-import cn.olange.pins.action.ConfigAction;
-import cn.olange.pins.action.RefreshPinsAction;
 import cn.olange.pins.action.UserActionGroup;
 import cn.olange.pins.model.Config;
 import cn.olange.pins.model.NeedMore;
@@ -14,15 +12,10 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.DoubleClickListener;
 import com.intellij.ui.ScrollingUtil;
-import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -67,7 +60,6 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		actionGroup.addSeparator();
 		actionGroup.add(new UserActionGroup());
 		actionGroup.add(actionManager.getAction("juejin.Setting"));
-		actionGroup.add(actionManager.getAction("juejin.MessageAction"));
 		actionGroup.add(actionManager.getAction("juejin.HelpAction"));
 		actionGroup.addSeparator();
 		ActionGroup catalogGroup = (ActionGroup) actionManager.getAction("Juejuin.Category");

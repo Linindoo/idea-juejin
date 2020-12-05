@@ -22,6 +22,7 @@ public class UserActionGroup extends ActionGroup {
         ActionManager actionManager = ActionManager.getInstance();
         if (config.isLogined()) {
             anActionList.add(actionManager.getAction("juejin.LogoutAction"));
+            anActionList.add(actionManager.getAction("juejin.MessageAction"));
         } else {
             anActionList.add(actionManager.getAction("juejin.LoginAction"));
         }
