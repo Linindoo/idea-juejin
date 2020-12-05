@@ -137,7 +137,8 @@ public class PinContentInfoPanel extends JPanel implements Disposable {
 		} else {
 			imageContent.setVisible(false);
 		}
-		JsonElement jsonElement = target.get("topic");
+		JsonElement jsonElement = pinItem.get("topic");
+		this.topic.setForeground(JBColor.BLUE);
 		if (jsonElement != null && !jsonElement.isJsonNull()) {
 			this.topic.setVisible(true);
 			this.topic.setText(jsonElement.getAsJsonObject().get("title").getAsString());
