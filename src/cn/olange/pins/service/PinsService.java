@@ -191,4 +191,18 @@ public class PinsService {
 		}
 		return null;
 	}
+
+	public JsonObject getPinInfo(String itemID) {
+		JsonObject params = new JsonObject();
+		params.addProperty("msg_id", itemID);
+		try {
+			String result = HttpUtil.postJson("https://api.juejin.cn/content_api/v1/short_msg/detail", params.toString());
+			if (StringUtils.isNotEmpty(result)) {
+				return new Gson().fromJson(result, JsonObject.class);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
