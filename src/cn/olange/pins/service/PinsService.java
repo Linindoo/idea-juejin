@@ -205,4 +205,19 @@ public class PinsService {
 		}
 		return null;
 	}
+
+	public JsonObject setAllRead(int msgType, String latest_id, String cookieValue) {
+		JsonObject params = new JsonObject();
+		params.addProperty("message_type", msgType);
+		params.addProperty("latest_id", latest_id);
+		try {
+			String result = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/message/set_all_read", params.toString(), cookieValue);
+			if (StringUtils.isNotEmpty(result)) {
+				return new Gson().fromJson(result, JsonObject.class);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }

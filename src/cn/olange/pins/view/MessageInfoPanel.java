@@ -28,14 +28,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Map;
 
 public class MessageInfoPanel extends JBPanel {
 
     private Project project;
+    private JsonObject messageData;
 
-    public MessageInfoPanel(Project project) {
+    public MessageInfoPanel(Project project, JsonObject messageData) {
         super();
         this.project = project;
+        this.messageData = messageData;
         this.setLayout(new BorderLayout());
         this.initComponent();
     }
@@ -60,6 +63,25 @@ public class MessageInfoPanel extends JBPanel {
         ApplicationManager.getApplication().invokeLater(() -> {
             IdeFocusManager.getInstance(this.project).requestFocus(tabbedPane, true);
         });
+        if (messageData != null) {
+            JsonObject count = messageData.get("count").getAsJsonObject();
+            for (Map.Entry<String, JsonElement> messageCount : count.entrySet()) {
+                String key = messageCount.getKey();
+                int noreadCount = messageCount.getValue().getAsInt();
+                if (noreadCount > 0) {
+                    if ("3".equalsIgnoreCase(key)) {
+                        tabbedPane.setTitleAt(0, "评论(" + noreadCount + ")");
+                    } else if ("2".equalsIgnoreCase(key)) {
+                        tabbedPane.setTitleAt(2, "关注(" + noreadCount + ")");
+                    } else if ("1".equalsIgnoreCase(key)) {
+                        tabbedPane.setTitleAt(1, "点赞(" + noreadCount + ")");
+                    } else if ("4".equalsIgnoreCase(key)) {
+                        tabbedPane.setTitleAt(3, "系统(" + noreadCount + ")");
+                    }
+                }
+
+            }
+        }
     }
 
 
@@ -77,7 +99,7 @@ public class MessageInfoPanel extends JBPanel {
             this.msgType = msgType;
             list = new JBList<>();
             alarm = new Alarm();
-            list.setMinimumSize(new Dimension(500,700));
+            list.getEmptyText().setText("混水摸鱼");
             this.setViewportView(list);
             (new DoubleClickListener() {
                 protected boolean onDoubleClick(MouseEvent event) {
@@ -155,6 +177,7 @@ public class MessageInfoPanel extends JBPanel {
                     if (jsonElement != null && !jsonElement.isJsonNull()) {
                         if ("0".equalsIgnoreCase(cursor)) {
                             mesages = jsonElement.getAsJsonArray();
+                            updateMessageStatus();
                         } else {
                             mesages.addAll(jsonElement.getAsJsonArray());
                         }
@@ -174,7 +197,18 @@ public class MessageInfoPanel extends JBPanel {
                     MessageList.this.list.setPaintBusy(false);
                 });
             });
+        }
 
+        private void updateMessageStatus() {
+            if (mesages != null && mesages.size() > 0) {
+                JsonObject lastMessage = mesages.get(0).getAsJsonObject().get("message").getAsJsonObject();
+                if (lastMessage.get("status").getAsInt() == 0) {
+                    String lastMessageID = lastMessage.get("message_id").getAsString();
+                    PinsService pinsService = PinsService.getInstance(project);
+                    Config config = JuejinPersistentConfig.getInstance().getState();
+                    pinsService.setAllRead(msgType, lastMessageID, config.getCookieValue());
+                }
+            }
         }
     }
 
@@ -196,7 +230,7 @@ public class MessageInfoPanel extends JBPanel {
                 JsonObject src_info = item.get("src_info").getAsJsonObject();
                 int dst_type = message.get("dst_type").getAsInt();
                 int status = message.get("status").getAsInt();
-                SimpleTextAttributes commonText = status == 1 ? new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.listTitleLabelForeground()) : new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.searchFieldGrayForeground());
+                SimpleTextAttributes commonText = status == 1 ? new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.listTitleLabelForeground()) : new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.selectedTabTextColor());
                 this.append(DateUtils.getDistanceDate(message.get("ctime").getAsString()), new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.listTitleLabelForeground()));
                 this.append(" ");
                 if (msgType == 1) {
