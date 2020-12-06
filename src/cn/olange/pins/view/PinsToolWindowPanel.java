@@ -151,7 +151,9 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		this.pinTable.setModel(model);
 		this.pinTable.getColumnModel().getColumn(0).setCellRenderer(new TableCellRender());
 		ApplicationManager.getApplication().executeOnPooledThread(() -> {
-			pinTable.setPaintBusy(true);
+			UIUtil.invokeLaterIfNeeded(()->{
+				pinTable.setPaintBusy(true);
+			});
 			Config config = JuejinPersistentConfig.getInstance().getState();
 			instance.getPageInfo(config.getCurentCatalog(), endCursor, pageSize, config.isLogined() ? config.getCookieValue() : "", result -> {
 				if (result.isSuccess()) {
@@ -179,7 +181,9 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 						pinTable.getEmptyText().setText("获取数据失败，请稍后刷新重试");
 					});
 				}
-				pinTable.setPaintBusy(false);
+				UIUtil.invokeLaterIfNeeded(() -> {
+					pinTable.setPaintBusy(false);
+				});
 			});
 		});
 	}
