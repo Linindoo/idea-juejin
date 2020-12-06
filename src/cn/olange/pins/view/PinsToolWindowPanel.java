@@ -150,7 +150,7 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		this.pinTable.getColumnModel().getColumn(0).setCellRenderer(new TableCellRender());
 		ApplicationManager.getApplication().executeOnPooledThread(() -> {
 			pinTable.setPaintBusy(true);
-			Config config = JuejinPersistentConfig.getInstance().getConfig();
+			Config config = JuejinPersistentConfig.getInstance().getState();
 			instance.getPageInfo(config.getCurentCatalog(), endCursor, pageSize, config.isLogined() ? config.getCookieValue() : "", result -> {
 				if (result.isSuccess()) {
 					SwingUtilities.invokeLater(() -> {

@@ -97,7 +97,7 @@ public class CommentList extends JPanel implements Disposable {
 				String text = textField.getText();
 				if (StringUtils.isNotEmpty(text) && config.isLogined()) {
 					commentBtn.setEnabled(false);
-					ApplicationManager.getApplication().invokeLater(() -> {
+					ApplicationManager.getApplication().executeOnPooledThread(() -> {
 						PinsService pinsService = PinsService.getInstance(project);
 						DefaultTreeModel model = (DefaultTreeModel) jxTree.getModel();
 						if (selectNode == null || selectNode.getUserObject() == null) {

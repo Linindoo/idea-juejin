@@ -19,12 +19,12 @@ import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class MessageInfoAction extends AnAction {
     private long lastTime = 0;
     private Disposable disposable;
+    private JsonObject messageData;
 
     public MessageInfoAction() {
         super(AllIcons.General.ShowInfos);
@@ -42,10 +42,13 @@ public class MessageInfoAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        MessageInfoPanel messageInfoPanel = new MessageInfoPanel(e.getProject());
+        MessageInfoPanel messageInfoPanel = new MessageInfoPanel(e.getProject(), messageData);
         PopupUtil.showBalloonForComponent(messageInfoPanel, "消息", MessageType.INFO, true, disposable);
         Balloon balloon = JBPopupFactory.getInstance().createBalloonBuilder(messageInfoPanel)
                 .setFillColor(messageInfoPanel.getBackground())
+                .setAnimationCycle(0)
+                .setFadeoutTime(0)
+                .setRequestFocus(true)
                 .createBalloon();
         balloon.show(new RelativePoint(e.getInputEvent().getComponent(), new Point(20, 30)), Balloon.Position.below);
     }
@@ -55,8 +58,8 @@ public class MessageInfoAction extends AnAction {
         JsonObject messageInfo = pinsService.getMessageInfo(config.getCookieValue());
         if (messageInfo != null && !messageInfo.get("data").isJsonNull()) {
             UIUtil.invokeLaterIfNeeded(() -> {
-                JsonObject data = messageInfo.get("data").getAsJsonObject();
-                int total = data.get("total").getAsInt();
+                messageData= messageInfo.get("data").getAsJsonObject();
+                int total = messageData.get("total").getAsInt();
                 if (total > 0) {
                     e.getPresentation().setIcon(AllIcons.General.Information);
                     e.getPresentation().setMultipleChoice(true);

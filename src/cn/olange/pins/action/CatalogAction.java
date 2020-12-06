@@ -29,7 +29,7 @@ public class CatalogAction extends ToggleAction {
     public void setSelected(@NotNull AnActionEvent anActionEvent, boolean b) {
         tag.setSelected(b);
         if (b) {
-            Config config = JuejinPersistentConfig.getInstance().getConfig();
+            Config config = JuejinPersistentConfig.getInstance().getState();
             config.setCurentCatalog(tag.getValue());
             PinsToolWindowPanel pinsToolWindowPanel = PinsToolWindowFactory.getDataContext(anActionEvent.getProject()).getData(DataKeys.JUEJIN_PROJECTS_PINPANEL);
             if (pinsToolWindowPanel != null) {

@@ -18,7 +18,7 @@ public class UserActionGroup extends ActionGroup {
     @Override
     public AnAction[] getChildren(@Nullable AnActionEvent anActionEvent) {
         List<AnAction> anActionList = Lists.newArrayList();
-        Config config = JuejinPersistentConfig.getInstance().getConfig();
+        Config config = JuejinPersistentConfig.getInstance().getState();
         ActionManager actionManager = ActionManager.getInstance();
         if (config.isLogined()) {
             anActionList.add(actionManager.getAction("juejin.LogoutAction"));

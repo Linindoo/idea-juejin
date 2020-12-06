@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 public class JuejinPersistentConfig implements PersistentStateComponent<Config> {
     private Config config = new Config();
 
-    @Nullable
     @Override
     public Config getState() {
         return this.config;
@@ -24,12 +23,5 @@ public class JuejinPersistentConfig implements PersistentStateComponent<Config> 
     @Nullable
     public static JuejinPersistentConfig getInstance() {
         return ServiceManager.getService(JuejinPersistentConfig.class);
-    }
-
-    public Config getConfig() {
-        return this.config;
-    }
-    public void setInitConfig(Config config) {
-        this.config = config;
     }
 }

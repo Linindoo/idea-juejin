@@ -24,7 +24,7 @@ public class LoginAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-        Config config = JuejinPersistentConfig.getInstance().getConfig();
+        Config config = JuejinPersistentConfig.getInstance().getState();
         if (config.isLogined()) {
             return;
         }
@@ -41,7 +41,6 @@ public class LoginAction extends AnAction {
             config.setNickname(userName);
             config.setLogined(true);
             PinsToolWindowFactory.updateTitle(anActionEvent.getProject(), userName);
-            JuejinPersistentConfig.getInstance().setInitConfig(config);
         } else {
             Notifications.Bus.notify(new Notification(Constant.NOTIFICATION_GROUP, "登录失败", "请确保用户参数配置正确", NotificationType.WARNING), anActionEvent.getProject());
         }

@@ -53,7 +53,7 @@ public class CatalogGroup extends ActionGroup {
     }
 
     List<CatalogTag> getTags() {
-        Config config = JuejinPersistentConfig.getInstance().getConfig();
+        Config config = JuejinPersistentConfig.getInstance().getState();
         List<CatalogTag> tags = new ArrayList<>();
         tags.add(new CatalogTag("推荐", "recommend", "recommend".equals(config.getCurentCatalog())));
         tags.add(new CatalogTag("热门", "hot", "hot".equals(config.getCurentCatalog())));

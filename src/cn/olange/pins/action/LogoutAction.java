@@ -15,12 +15,11 @@ public class LogoutAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-        Config config = JuejinPersistentConfig.getInstance().getConfig();
+        Config config = JuejinPersistentConfig.getInstance().getState();
         if (!config.isLogined()) {
             return;
         }
         PinsToolWindowFactory.updateTitle(anActionEvent.getProject(), "");
         config.setLogined(false);
-        JuejinPersistentConfig.getInstance().setInitConfig(config);
     }
 }

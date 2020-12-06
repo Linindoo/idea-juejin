@@ -50,7 +50,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
 
   @Override
   public boolean isModified(@NotNull SettingConfigurable settings) {
-    Config config = JuejinPersistentConfig.getInstance().getConfig();
+    Config config = JuejinPersistentConfig.getInstance().getState();
     return !Comparing.strEqual(cookieEditor.getDocument().getText().trim(), config.getCookieValue());
   }
 
@@ -211,13 +211,12 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
 
   @Override
   public void apply(@NotNull SettingConfigurable settings) {
-    Config config = JuejinPersistentConfig.getInstance().getConfig();
+    Config config = JuejinPersistentConfig.getInstance().getState();
     if (config == null) {
       config = new Config();
     }
     config.setCookieValue(this.cookieEditor.getDocument().getText().trim());
     config.setCookieType(this.cookieType);
-    JuejinPersistentConfig.getInstance().setInitConfig(config);
   }
 
   @Override
