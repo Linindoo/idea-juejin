@@ -10,6 +10,7 @@ public class Config {
     private String curentCatalog;
     private String cookieValue;
     private String cookieType = Constant.cookieType.DIRECT.name();
+    private int messageRefreshInterval = 60;
 
     public Config() {
         this.curentCatalog = "hot";
@@ -77,5 +78,13 @@ public class Config {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public int getMessageRefreshInterval() {
+        return messageRefreshInterval;
+    }
+
+    public void setMessageRefreshInterval(int messageRefreshInterval) {
+        this.messageRefreshInterval = messageRefreshInterval;
     }
 }

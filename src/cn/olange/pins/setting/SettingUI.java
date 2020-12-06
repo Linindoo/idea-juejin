@@ -9,8 +9,10 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.options.ConfigurableUi;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.fields.IntegerField;
 import com.intellij.util.concurrency.EdtScheduledExecutorService;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +31,7 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -44,16 +47,17 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
   private JButton 刷新Button;
   private JLabel qrcodeImage;
   private JLabel resultLabel;
+  private JPanel messagePanel;
   private ButtonGroup radioGroup;
   private Editor cookieEditor = null;
   private ScheduledFuture<?> schedule;
+  private IntegerField messageintervalInput;
 
   @Override
   public boolean isModified(@NotNull SettingConfigurable settings) {
     Config config = JuejinPersistentConfig.getInstance().getState();
-    return !Comparing.strEqual(cookieEditor.getDocument().getText().trim(), config.getCookieValue());
+    return !Comparing.strEqual(cookieEditor.getDocument().getText().trim(), config.getCookieValue()) || messageintervalInput.getValue() != config.getMessageRefreshInterval();
   }
-
   public SettingUI(@NotNull final SettingConfigurable settings) {
     radioGroup=new ButtonGroup();
     radioGroup.add(wechatCode);
@@ -94,6 +98,9 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
     cookieEditorPanel.setLayout(new BorderLayout());
     cookieEditorPanel.add(jbScrollPane, BorderLayout.CENTER);
     extendPanel.setVisible(false);
+    messagePanel.setLayout(new BorderLayout());
+    messageintervalInput = new IntegerField("messageInterval", 10, Integer.MAX_VALUE);
+    messagePanel.add(messageintervalInput, BorderLayout.WEST);
   }
 
   private void refreshQrCode() {
@@ -207,6 +214,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
     } else if (Constant.cookieType.QRCODE.name().equalsIgnoreCase(cookieType)) {
       radioGroup.setSelected(wechatCode.getModel(), true);
     }
+    messageintervalInput.setValue(config.getMessageRefreshInterval());
   }
 
   @Override
@@ -217,6 +225,12 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
     }
     config.setCookieValue(this.cookieEditor.getDocument().getText().trim());
     config.setCookieType(this.cookieType);
+    try {
+      messageintervalInput.validateContent();
+      config.setMessageRefreshInterval(messageintervalInput.getValue());
+    } catch (ConfigurationException e) {
+      return;
+    }
   }
 
   @Override

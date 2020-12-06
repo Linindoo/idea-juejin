@@ -29,7 +29,7 @@ public class MessageInfoAction extends AnAction {
     @Override
     public void update(AnActionEvent e) {
         Config config = JuejinPersistentConfig.getInstance().getState();
-        if (config.isLogined() && System.currentTimeMillis() - lastTime > 1000 * 10) {
+        if (config.isLogined() && System.currentTimeMillis() - lastTime > config.getMessageRefreshInterval()) {
             refreshMessageInfo(e, config);
             lastTime = System.currentTimeMillis();
         }
