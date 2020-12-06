@@ -13,16 +13,12 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.fields.IntegerField;
-import com.intellij.util.concurrency.EdtScheduledExecutorService;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.util.Base64;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.jetbrains.annotations.NotNull;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,10 +26,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.text.NumberFormat;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,29 +98,29 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
 
   private void refreshQrCode() {
     extendPanel.setVisible(true);
-    ApplicationManager.getApplication().invokeLater(()->{
-      ImageIcon imageIcon = new ImageIcon();
-      try {
-        String result = HttpUtil.getJson("https://open.weixin.qq.com/connect/qrconnect?appid=wx5059f665cac93f16&redirect_uri=https%3A%2F%2Fjuejin.cn%2Fpassport%2Fauth%2Flogin_success&response_type=code&scope=snsapi_login&state=136023ea3gASoVCgoVPZIDRmNjQzY2IyYThlODJjNzU0OWFlY2E4YzhhN2U0ZjIwoU6-aHR0cHM6Ly9qdWVqaW4uY24vb2F1dGgtcmVzdWx0oVYBoUkAoUQAoUHRCjChTdEKMKFIqWp1ZWppbi5jbqFSBKJQTNEE_aZBQ1RJT06goUyyaHR0cHM6Ly9qdWVqaW4uY24voVTZIGZkN2I5MjUxNzQxMzY5ZGI2ZTZlNmI1MTJhYjEwODJhoVcAoUYAolNBAKFVww%253D%253D");
-        Document document = Jsoup.parse(result);
-        Elements js_qr_img = document.body().getElementsByClass("js_qr_img");
-        if (js_qr_img.size() > 0) {
-          String src = js_qr_img.get(0).attr("src");
-          String UID = src.substring(src.lastIndexOf("/") +1);
-          URL location = new URL("https://open.weixin.qq.com" + src);
-          UIUtil.invokeLaterIfNeeded(()->{
-            imageIcon.setImage(new ImageIcon(location).getImage().getScaledInstance(100, 100, Image.SCALE_DEFAULT));
-            qrcodeImage.setIcon(imageIcon);
-            schedule = EdtScheduledExecutorService.getInstance().schedule(() -> {
-              checkLogin(UID, "");
-            }, 1, TimeUnit.SECONDS);
-          });
-        }
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-
-    });
+//    ApplicationManager.getApplication().invokeLater(()->{
+//      ImageIcon imageIcon = new ImageIcon();
+//      try {
+//        String result = HttpUtil.getJson("https://open.weixin.qq.com/connect/qrconnect?appid=wx5059f665cac93f16&redirect_uri=https%3A%2F%2Fjuejin.cn%2Fpassport%2Fauth%2Flogin_success&response_type=code&scope=snsapi_login&state=136023ea3gASoVCgoVPZIDRmNjQzY2IyYThlODJjNzU0OWFlY2E4YzhhN2U0ZjIwoU6-aHR0cHM6Ly9qdWVqaW4uY24vb2F1dGgtcmVzdWx0oVYBoUkAoUQAoUHRCjChTdEKMKFIqWp1ZWppbi5jbqFSBKJQTNEE_aZBQ1RJT06goUyyaHR0cHM6Ly9qdWVqaW4uY24voVTZIGZkN2I5MjUxNzQxMzY5ZGI2ZTZlNmI1MTJhYjEwODJhoVcAoUYAolNBAKFVww%253D%253D");
+//        Document document = Jsoup.parse(result);
+//        Elements js_qr_img = document.body().getElementsByClass("js_qr_img");
+//        if (js_qr_img.size() > 0) {
+//          String src = js_qr_img.get(0).attr("src");
+//          String UID = src.substring(src.lastIndexOf("/") +1);
+//          URL location = new URL("https://open.weixin.qq.com" + src);
+//          UIUtil.invokeLaterIfNeeded(()->{
+//            imageIcon.setImage(new ImageIcon(location).getImage().getScaledInstance(100, 100, Image.SCALE_DEFAULT));
+//            qrcodeImage.setIcon(imageIcon);
+//            schedule = EdtScheduledExecutorService.getInstance().schedule(() -> {
+//              checkLogin(UID, "");
+//            }, 1, TimeUnit.SECONDS);
+//          });
+//        }
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
+//
+//    });
   }
 
   void checkLogin(String ID, String last) {

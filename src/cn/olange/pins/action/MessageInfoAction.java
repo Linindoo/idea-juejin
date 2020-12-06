@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.UIUtil;
+import icons.JuejinIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -23,7 +24,7 @@ public class MessageInfoAction extends AnAction {
     private JsonObject messageData;
 
     public MessageInfoAction() {
-        super(AllIcons.General.ShowInfos);
+        super(JuejinIcons.Msg_read);
     }
 
     @Override
@@ -57,11 +58,10 @@ public class MessageInfoAction extends AnAction {
                 messageData= messageInfo.get("data").getAsJsonObject();
                 int total = messageData.get("total").getAsInt();
                 if (total > 0) {
-                    e.getPresentation().setIcon(AllIcons.General.Information);
-                    e.getPresentation().setMultipleChoice(true);
+                    e.getPresentation().setIcon(JuejinIcons.Msg_unread);
                     e.getPresentation().setText(String.format("你有%s条未读消息",total));
                 } else {
-                    e.getPresentation().setIcon(AllIcons.General.ShowInfos);
+                    e.getPresentation().setIcon(JuejinIcons.Msg_read);
                     e.getPresentation().setText("暂无消息");
                 }
             });

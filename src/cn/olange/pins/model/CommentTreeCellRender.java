@@ -3,13 +3,11 @@ package cn.olange.pins.model;
 import cn.olange.pins.setting.JuejinPersistentConfig;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.ide.IdeBundle;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.util.ui.JBInsets;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
@@ -21,7 +19,6 @@ import javax.swing.tree.TreeCellRenderer;
 import java.awt.*;
 
 public class CommentTreeCellRender extends JPanel implements TreeCellRenderer {
-    private SimpleTextAttributes simpleTextAttributes = new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.listTitleLabelForeground());
     private static final int MARGIN = 2;
     private JBLabel user;
     private JPanel userActionPanel;
@@ -60,8 +57,7 @@ public class CommentTreeCellRender extends JPanel implements TreeCellRenderer {
             @Override
             public void customizeCellRenderer(@NotNull JTree jTree, Object o, boolean b, boolean b1, boolean b2, int i, boolean b3) {
                 this.setFont(UIUtil.getLabelFont().deriveFont(UIUtil.getFontSize(UIUtil.FontSize.SMALL)));
-                this.append("...", simpleTextAttributes);
-                this.setIpad(JBInsets.create(1, 7));
+                this.append("...", SimpleTextAttributes.SIMPLE_CELL_ATTRIBUTES);
                 this.setMyBorder(null);
             }
         };

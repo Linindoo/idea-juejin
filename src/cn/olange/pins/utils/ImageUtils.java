@@ -1,7 +1,5 @@
 package cn.olange.pins.utils;
 
-import com.intellij.util.ui.ImageUtil;
-import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.awt.*;
@@ -18,7 +16,7 @@ public class ImageUtils {
 	                                              int cornerRadius) {
 		int w = image.getWidth();
 		int h = image.getHeight();
-		BufferedImage output = UIUtil.createImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2 = output.createGraphics();
 		g2.setComposite(AlphaComposite.Src);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -59,7 +57,7 @@ public class ImageUtils {
 	 * @param interpolationType
 	 * @return
 	 */
-	public static BufferedImage imageScale(
+	private static BufferedImage imageScale(
 			BufferedImage in, double sx, double sy, int interpolationType){
 		AffineTransform matrix=new AffineTransform(); //仿射变换
 		matrix.scale(sx,sy);
@@ -79,7 +77,7 @@ public class ImageUtils {
 		}
 		int width = (int)((double)in.getWidth() * sx);
 		int height = (int)((double)in.getHeight() * sy);
-		BufferedImage dstImage = ImageUtil.createImage(width, height, in.getType());
+		BufferedImage dstImage = new BufferedImage(width, height, in.getType());
 		op.filter(in, dstImage);
 		return dstImage;
 	}
@@ -91,7 +89,7 @@ public class ImageUtils {
 	 * @param sy	纵坐标缩放比例
 	 * @return
 	 */
-	public static BufferedImage imageScale(BufferedImage in, double sx, double sy){
+	private static BufferedImage imageScale(BufferedImage in, double sx, double sy){
 		return imageScale(in, sx, sy, 3);
 	}
 
@@ -102,7 +100,7 @@ public class ImageUtils {
 	 * @param height	目标图片的高度
 	 * @return
 	 */
-	public static BufferedImage imageScale(BufferedImage in, int width, int height) {
+	private static BufferedImage imageScale(BufferedImage in, int width, int height) {
 		double originW = in.getWidth();
 		double originH = in.getHeight();
 		double sx = width / originW;

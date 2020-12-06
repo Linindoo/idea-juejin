@@ -18,7 +18,6 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.util.ui.ImageUtil;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -26,7 +25,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -65,9 +63,8 @@ public class PinContentInfoPanel extends JPanel implements Disposable {
 				try {
 					URL avatarLarge = new URL(avatarUrl);
 					ImageIcon icon = new ImageIcon(avatarLarge);
-					Image image = ImageUtil.scaleImage(icon.getImage(), 40, 40);
-					BufferedImage result = ImageUtils.makeRoundedCorner(ImageUtil.toBufferedImage(image), 40);
-					icon.setImage(result);
+					Image image = ImageUtils.scaleImage(icon.getImage(), 40, 40);
+					icon.setImage(image);
 					UIUtil.invokeLaterIfNeeded(()->{
 						avatar.setIcon(icon);
 					});

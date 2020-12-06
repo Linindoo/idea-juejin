@@ -249,8 +249,8 @@ public class MessageInfoPanel extends JBPanel {
                 JsonObject src_info = item.get("src_info").getAsJsonObject();
                 int dst_type = message.get("dst_type").getAsInt();
                 int status = message.get("status").getAsInt();
-                SimpleTextAttributes commonText = status == 1 ? new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.listTitleLabelForeground()) : new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.selectedTabTextColor());
-                this.append(DateUtils.getDistanceDate(message.get("ctime").getAsString()), new SimpleTextAttributes(128, JBUI.CurrentTheme.BigPopup.listTitleLabelForeground()));
+                SimpleTextAttributes commonText = status == 1 ? new SimpleTextAttributes(128, UIUtil.getLabelDisabledForeground()) : SimpleTextAttributes.SIMPLE_CELL_ATTRIBUTES;
+                this.append(DateUtils.getDistanceDate(message.get("ctime").getAsString()), new SimpleTextAttributes(128, UIUtil.getLabelDisabledForeground()));
                 this.append(" ");
                 if (msgType == 1) {
                     this.append(src_info.get("name").getAsString(), new SimpleTextAttributes(128, JBColor.BLUE));
