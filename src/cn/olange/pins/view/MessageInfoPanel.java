@@ -10,8 +10,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.browsers.WebBrowserManager;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.DoubleClickListener;
@@ -34,11 +36,13 @@ public class MessageInfoPanel extends JBPanel {
 
     private Project project;
     private JsonObject messageData;
+    private Disposable disposable;
 
-    public MessageInfoPanel(Project project, JsonObject messageData) {
+    public MessageInfoPanel(Project project, JsonObject messageData, Disposable disposable) {
         super();
         this.project = project;
         this.messageData = messageData;
+        this.disposable = disposable;
         this.setLayout(new BorderLayout());
         this.initComponent();
     }
@@ -56,10 +60,18 @@ public class MessageInfoPanel extends JBPanel {
                 }
             }
         });
-        tabbedPane.addTab("评论", new MessageList(3));
-        tabbedPane.addTab("点赞", new MessageList(1));
-        tabbedPane.addTab("关注", new MessageList(2));
-        tabbedPane.addTab("系统", new MessageList(4));
+        MessageList commentList = new MessageList(3);
+        tabbedPane.addTab("评论", commentList);
+        MessageList praiseList = new MessageList(1);
+        tabbedPane.addTab("点赞", praiseList);
+        MessageList guanzhulist = new MessageList(2);
+        tabbedPane.addTab("关注", guanzhulist);
+        MessageList systemList = new MessageList(4);
+        tabbedPane.addTab("系统", systemList);
+        Disposer.register(this.disposable, commentList);
+        Disposer.register(this.disposable, praiseList);
+        Disposer.register(this.disposable, guanzhulist);
+        Disposer.register(this.disposable, systemList);
         ApplicationManager.getApplication().invokeLater(() -> {
             IdeFocusManager.getInstance(this.project).requestFocus(tabbedPane, true);
         });
@@ -85,7 +97,7 @@ public class MessageInfoPanel extends JBPanel {
     }
 
 
-    class MessageList extends JBScrollPane{
+    class MessageList extends JBScrollPane implements Disposable{
         private JsonArray mesages = new JsonArray();
         private String cursor;
         private int msgType;
@@ -208,6 +220,13 @@ public class MessageInfoPanel extends JBPanel {
                     Config config = JuejinPersistentConfig.getInstance().getState();
                     pinsService.setAllRead(msgType, lastMessageID, config.getCookieValue());
                 }
+            }
+        }
+
+        @Override
+        public void dispose() {
+            if (alarm != null && !alarm.isDisposed()) {
+                Disposer.dispose(this.alarm);
             }
         }
     }

@@ -125,7 +125,9 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 
 	@Override
 	public void dispose() {
-		this.mySearchRescheduleOnCancellationsAlarm.dispose();
+		if (mySearchRescheduleOnCancellationsAlarm != null) {
+			this.mySearchRescheduleOnCancellationsAlarm.dispose();
+		}
 	}
 
 	public void scheduleResultsUpdate() {

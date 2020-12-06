@@ -7,13 +7,10 @@ import cn.olange.pins.view.MessageInfoPanel;
 import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.ui.popup.util.PopupUtil;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.UIUtil;
@@ -23,12 +20,10 @@ import java.awt.*;
 
 public class MessageInfoAction extends AnAction {
     private long lastTime = 0;
-    private Disposable disposable;
     private JsonObject messageData;
 
     public MessageInfoAction() {
         super(AllIcons.General.ShowInfos);
-        disposable = Disposer.newDisposable();
     }
 
     @Override
@@ -42,15 +37,16 @@ public class MessageInfoAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        MessageInfoPanel messageInfoPanel = new MessageInfoPanel(e.getProject(), messageData);
-        PopupUtil.showBalloonForComponent(messageInfoPanel, "消息", MessageType.INFO, true, disposable);
+        Disposable disposable = Disposer.newDisposable();
+        MessageInfoPanel messageInfoPanel = new MessageInfoPanel(e.getProject(), messageData, disposable);
         Balloon balloon = JBPopupFactory.getInstance().createBalloonBuilder(messageInfoPanel)
                 .setFillColor(messageInfoPanel.getBackground())
                 .setAnimationCycle(0)
+                .setDisposable(disposable)
                 .setFadeoutTime(0)
                 .setRequestFocus(true)
                 .createBalloon();
-        balloon.show(new RelativePoint(e.getInputEvent().getComponent(), new Point(20, 30)), Balloon.Position.below);
+        balloon.show(new RelativePoint(e.getInputEvent().getComponent(), new Point(15, 30)), Balloon.Position.below);
     }
 
     private void refreshMessageInfo(AnActionEvent e, Config config) {
