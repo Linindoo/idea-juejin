@@ -59,7 +59,7 @@
                     serviceImplementation="cn.olange.pins.service.PinsService"/>
     <applicationService serviceInterface="cn.olange.pins.setting.JuejinPersistentConfig"
                         serviceImplementation="cn.olange.pins.setting.JuejinPersistentConfig"/>
-    <applicationConfigurable groupId="tools" displayName="juejin plugin" id="juejin.pin"
+    <applicationConfigurable groupId="tools" displayName="juejin config" id="juejin.pin"
                              instance="cn.olange.pins.setting.SettingConfigurable"/>
   </extensions>
 
