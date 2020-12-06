@@ -12,13 +12,15 @@
    <em>2.Support login in juejin</em>
    <em>3. more beauty and more yellow </em>
    <em>4.Communicate with developer </em>
-   <em>4.prise and fish </em>
+   <em>5.prise and fish </em>
+   <em>6.personal message notification </em>
    <p> juejin-pins是一款增强idea对juejin社区支持的插件，目前可以提供以下功能 </p>
    <em>1.支持推荐，热门沸点切换刷新</em>
    <em>2.支持简单登录</em>
    <em>3.支持沸点详情查看，大图浏览</em>
    <em>4.评论+回复</em>
    <em>5.点赞</em>
+   <em>6.个人消息查看</em>
     ]]></description>
   <change-notes><![CDATA[
       <ul>
@@ -26,6 +28,7 @@
              1.简单登录.<br>
              2.实现评论、点赞交互<br>
              3.UI性能大幅优化<br>
+             4. 实现个人消息通知及查看<br>
           </li>
           <li> v1.0.5 <br/>
           1.优化沸点显示性能
