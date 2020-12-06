@@ -99,7 +99,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
     cookieEditorPanel.add(jbScrollPane, BorderLayout.CENTER);
     extendPanel.setVisible(false);
     messagePanel.setLayout(new BorderLayout());
-    messageintervalInput = new IntegerField("messageInterval", 10, Integer.MAX_VALUE);
+    messageintervalInput = new IntegerField("messageInterval", 60, Integer.MAX_VALUE);
     messagePanel.add(messageintervalInput, BorderLayout.WEST);
   }
 
