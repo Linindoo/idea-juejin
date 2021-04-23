@@ -26,7 +26,7 @@ public class PinsService {
 		query.addProperty("sort_type", "hot".equals(topic) ? 200 : 300);
 		query.addProperty("cursor", endCursor);
 		try {
-			String result = HttpUtil.postJson("https://apinew.juejin.im/recommend_api/v1/short_msg/" + topic, query.toString(), cookieValue);
+			String result = HttpUtil.postJson("https://api.juejin.cn/recommend_api/v1/short_msg/" + topic, query.toString(), cookieValue);
 			JsonObject jObject = new Gson().fromJson(result, JsonObject.class);
 			handler.handle(new AsyncResult(true, jObject));
 		} catch (IOException e) {
@@ -43,7 +43,7 @@ public class PinsService {
 			jsonObject.addProperty("item_id", pinId);
 			jsonObject.addProperty("item_type", 4);
 			jsonObject.addProperty("limit", pageSize);
-			String json = HttpUtil.postJson("https://apinew.juejin.im/interact_api/v1/comment/list", jsonObject.toString());
+			String json = HttpUtil.postJson("https://api.juejin.cn/interact_api/v1/comment/list", jsonObject.toString());
 			JsonObject result = new Gson().fromJson(json, JsonObject.class);
 			handler.handle(new AsyncResult(true, result));
 		} catch (IOException e) {

@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cn.olange.pins</id>
   <name>juejin-pins</name>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   <vendor email="olange@52zhoujia.cn" url="https://github.com/Linindoo/idea-juejin">olange</vendor>
 
   <description><![CDATA[
@@ -24,6 +24,10 @@
     ]]></description>
   <change-notes><![CDATA[
       <ul>
+          <li>
+          v1.0.7<br>
+          1. 更新API
+          </li>
           <li>v1.0.6<br>
              1.简单登录.<br>
              2.实现评论、点赞交互<br>
