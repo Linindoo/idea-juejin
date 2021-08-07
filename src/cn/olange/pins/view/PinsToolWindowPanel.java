@@ -62,6 +62,9 @@ public class PinsToolWindowPanel extends SimpleToolWindowPanel implements Dispos
 		actionGroup.add(actionManager.getAction("juejin.Setting"));
 		actionGroup.add(actionManager.getAction("juejin.HelpAction"));
 		actionGroup.addSeparator();
+		actionGroup.add(actionManager.getAction("juejin.DailySign"));
+		actionGroup.add(actionManager.getAction("juejin.LuckDraw"));
+		actionGroup.addSeparator();
 		ActionGroup catalogGroup = (ActionGroup) actionManager.getAction("Juejuin.Category");
 		actionGroup.add(catalogGroup);
 		ActionToolbar actionToolbar = actionManager.createActionToolbar("pinsToolBar", actionGroup, true);

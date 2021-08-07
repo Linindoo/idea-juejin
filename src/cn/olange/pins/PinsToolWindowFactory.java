@@ -20,6 +20,8 @@ import com.intellij.ui.content.ContentFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Date;
+
 
 public class PinsToolWindowFactory implements ToolWindowFactory {
 	public static String ID = "沸点";
@@ -42,6 +44,14 @@ public class PinsToolWindowFactory implements ToolWindowFactory {
 					config.setNickname("");
 					config.setLogined(false);
 					updateTitle(project, "未登录");
+				}
+				JsonObject result = pinsService.dailyHasSign(config.getCookieValue());
+				if (result != null && !result.isJsonNull() && !result.get("data").isJsonNull() && result.get("data").getAsBoolean()) {
+					config.setDailySign(true);
+					config.setSignDate(new Date());
+				} else {
+					config.setSignDate(null);
+					config.setDailySign(false);
 				}
 			});
 		} else {

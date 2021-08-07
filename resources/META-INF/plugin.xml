@@ -80,6 +80,12 @@
     <action id="juejin.Setting" class="cn.olange.pins.action.ConfigAction"
             text="设置" description="setting" >
     </action>
+    <action id="juejin.DailySign" class="cn.olange.pins.action.DailySignAction"
+            text="签到" description="daily sign">
+    </action>
+    <action id="juejin.LuckDraw" class="cn.olange.pins.action.LuckDrawAction"
+            text="抽奖" description="luckdraw">
+    </action>
     <action id="juejin.HelpAction" class="cn.olange.pins.action.HelpAction"
             text="帮助" description="help" icon="JuejinIcons.HELP">
     </action>

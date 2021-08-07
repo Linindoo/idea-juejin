@@ -1,6 +1,8 @@
 package cn.olange.pins.model;
 
 
+import java.util.Date;
+
 public class Config {
     private boolean logined;
     private String nickname;
@@ -10,6 +12,25 @@ public class Config {
     private String curentCatalog;
     private String cookieValue;
     private String cookieType = Constant.cookieType.DIRECT.name();
+    private boolean dailySign;
+    private Date signDate;
+
+    public boolean isDailySign() {
+        return dailySign;
+    }
+
+    public void setDailySign(boolean dailySign) {
+        this.dailySign = dailySign;
+    }
+
+    public Date getSignDate() {
+        return signDate;
+    }
+
+    public void setSignDate(Date signDate) {
+        this.signDate = signDate;
+    }
+
     private int messageRefreshInterval = 60;
 
     public Config() {

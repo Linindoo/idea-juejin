@@ -80,6 +80,36 @@ public class PinsService {
 		return new JsonObject();
 	}
 
+	public JsonObject luckDraw(String cookieValue) {
+		try {
+			String json = HttpUtil.postJson("https://api.juejin.cn/growth_api/v1/lottery/draw", "", cookieValue);
+			return new Gson().fromJson(json, JsonObject.class);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new JsonObject();
+	}
+
+	public JsonObject dailyHasSign(String cookieValue) {
+		try {
+			String json = HttpUtil.getJson("https://api.juejin.cn/growth_api/v1/get_today_status", cookieValue);
+			return new Gson().fromJson(json, JsonObject.class);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new JsonObject();
+	}
+
+	public JsonObject toSign(String signature,String cookieValue) {
+		try {
+			String json = HttpUtil.postJson("https://api.juejin.cn/growth_api/v1/check_in?_signature=" + signature, "", cookieValue);
+			return new Gson().fromJson(json, JsonObject.class);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new JsonObject();
+	}
+
 	public JsonObject comment(String pinID, String replyContent, String cookieValue) {
 		JsonObject params = new JsonObject();
 		params.addProperty("client_type", 2608);
