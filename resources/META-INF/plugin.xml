@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cn.olange.pins</id>
   <name>juejin-pins</name>
-  <version>1.0.8</version>
+  <version>1.0.9</version>
   <vendor email="olange@52zhoujia.cn" url="https://github.com/Linindoo/idea-juejin">olange</vendor>
 
   <description><![CDATA[
@@ -21,9 +21,16 @@
    <em>4.评论+回复</em>
    <em>5.点赞</em>
    <em>6.个人消息查看</em>
+   <em>7.签到</em>
+   <em>8.抽奖梭哈</em>
     ]]></description>
   <change-notes><![CDATA[
       <ul>
+          <li>
+            v1.0.9<br>
+            1. 添加自动签到
+            2. 抽奖一键梭哈
+          </li>
           <li>
             v1.0.8<br>
             1. 添加签到和抽奖
@@ -87,8 +94,8 @@
     <action id="juejin.DailySign" class="cn.olange.pins.action.DailySignAction"
             text="签到" description="daily sign">
     </action>
-    <action id="juejin.LuckDraw" class="cn.olange.pins.action.LuckDrawAction"
-            text="抽奖" description="luckdraw">
+    <action id="juejin.LuckDrawAllinOne" class="cn.olange.pins.action.LuckDrawAllinOneAction"
+            text="梭哈" description="luckdrawAllinOne">
     </action>
     <action id="juejin.HelpAction" class="cn.olange.pins.action.HelpAction"
             text="帮助" description="help" icon="JuejinIcons.HELP">

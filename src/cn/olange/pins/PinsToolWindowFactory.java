@@ -20,6 +20,7 @@ import com.intellij.ui.content.ContentFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -45,11 +46,25 @@ public class PinsToolWindowFactory implements ToolWindowFactory {
 					config.setLogined(false);
 					updateTitle(project, "未登录");
 				}
+
 				JsonObject result = pinsService.dailyHasSign(config.getCookieValue());
 				if (result != null && !result.isJsonNull() && !result.get("data").isJsonNull() && result.get("data").getAsBoolean()) {
 					config.setDailySign(true);
 					config.setSignDate(new Date());
 				} else {
+					if (config.isEnableAutoSign()) {
+						JsonObject signResult = pinsService.toSign("", config.getCookieValue());
+						if (signResult == null || signResult.isJsonNull()) {
+							Notifications.Bus.notify(new Notification(Constant.NOTIFICATION_GROUP, "自动签到失败", "请尝试手动签到", NotificationType.WARNING), project);
+						} else if (!signResult.get("data").isJsonNull()) {
+							JsonObject data = signResult.get("data").getAsJsonObject();
+							int incr_point = data.get("incr_point").getAsInt();
+							int sum_point = data.get("sum_point").getAsInt();
+							Notifications.Bus.notify(new Notification(Constant.NOTIFICATION_GROUP, "自动签到成功", "矿石数： +" + incr_point + ",现总数为：" + sum_point, NotificationType.INFORMATION), project);
+						} else {
+							Notifications.Bus.notify(new Notification(Constant.NOTIFICATION_GROUP, "自动签到失败", signResult.get("err_msg").getAsString(), NotificationType.WARNING), project);
+						}
+					}
 					config.setSignDate(null);
 					config.setDailySign(false);
 				}

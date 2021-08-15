@@ -41,6 +41,8 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
   private JLabel qrcodeImage;
   private JLabel resultLabel;
   private JPanel messagePanel;
+  private JRadioButton enableAutoSign;
+  private JLabel autoSignLabel;
   private ButtonGroup radioGroup;
   private Editor cookieEditor = null;
   private ScheduledFuture<?> schedule;
@@ -49,7 +51,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
   @Override
   public boolean isModified(@NotNull SettingConfigurable settings) {
     Config config = JuejinPersistentConfig.getInstance().getState();
-    return !Comparing.strEqual(cookieEditor.getDocument().getText().trim(), config.getCookieValue()) || messageintervalInput.getValue() != config.getMessageRefreshInterval();
+    return !Comparing.strEqual(cookieEditor.getDocument().getText().trim(), config.getCookieValue()) || messageintervalInput.getValue() != config.getMessageRefreshInterval() || config.isEnableAutoSign() != this.enableAutoSign.isSelected();
   }
   public SettingUI(@NotNull final SettingConfigurable settings) {
     radioGroup=new ButtonGroup();
@@ -207,6 +209,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
     } else if (Constant.cookieType.QRCODE.name().equalsIgnoreCase(cookieType)) {
       radioGroup.setSelected(wechatCode.getModel(), true);
     }
+    this.enableAutoSign.setSelected(config.isEnableAutoSign());
     messageintervalInput.setValue(config.getMessageRefreshInterval());
   }
 
@@ -218,6 +221,7 @@ public class SettingUI implements ConfigurableUi<SettingConfigurable> {
     }
     config.setCookieValue(this.cookieEditor.getDocument().getText().trim());
     config.setCookieType(this.cookieType);
+    config.setEnableAutoSign(this.enableAutoSign.isSelected());
     try {
       messageintervalInput.validateContent();
       config.setMessageRefreshInterval(messageintervalInput.getValue());

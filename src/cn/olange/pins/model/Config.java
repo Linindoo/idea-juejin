@@ -13,6 +13,7 @@ public class Config {
     private String cookieValue;
     private String cookieType = Constant.cookieType.DIRECT.name();
     private boolean dailySign;
+    private boolean enableAutoSign;
     private Date signDate;
 
     public boolean isDailySign() {
@@ -107,5 +108,13 @@ public class Config {
 
     public void setMessageRefreshInterval(int messageRefreshInterval) {
         this.messageRefreshInterval = messageRefreshInterval;
+    }
+
+    public boolean isEnableAutoSign() {
+        return enableAutoSign;
+    }
+
+    public void setEnableAutoSign(boolean enableAutoSign) {
+        this.enableAutoSign = enableAutoSign;
     }
 }
